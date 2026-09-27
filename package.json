@@ -1,0 +1,29 @@
+{
+  "name": "paymish-node.js-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/P-T-L/Paymish-Node.JS-SDK.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/P-T-L/Paymish-Node.JS-SDK/issues"
+  },
+  "homepage": "https://github.com/P-T-L/Paymish-Node.JS-SDK#readme",
+  "dependencies": {
+    "dotenv": "^18.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "jest": "^30.5.2",
+    "prettier": "^3.9.9"
+  }
+}
