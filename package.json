@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -18,12 +18,8 @@
     "url": "https://github.com/P-T-L/Paymish-Node.JS-SDK/issues"
   },
   "homepage": "https://github.com/P-T-L/Paymish-Node.JS-SDK#readme",
-  "dependencies": {
-    "dotenv": "^18.0.4"
-  },
   "devDependencies": {
-    "eslint": "^10.11.0",
-    "jest": "^30.5.2",
-    "prettier": "^3.9.9"
+    "dotenv": "^18.0.4",
+    "jest": "^30.5.2"
   }
 }
