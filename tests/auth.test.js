@@ -43,11 +43,12 @@ describe("Auth Module - generateToken()", () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledWith(
       "https://api.paymish.com/api/user-service/external/v1/generate-token",
-      {
+      expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
-      },
+        signal: expect.any(AbortSignal),
+      }),
     );
 
     expect(result).toEqual(mockResponseBody);
