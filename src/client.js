@@ -38,6 +38,7 @@ class HttpClient {
           data.message || "An error occurred during the request",
           response.status,
           data.errors || null,
+          body, // Will be automatically sanitized inside PaymishError constructor
         );
       }
 
