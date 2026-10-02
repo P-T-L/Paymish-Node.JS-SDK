@@ -105,4 +105,25 @@ describe("Auth Module - generateToken()", () => {
     // Ensure fetch was never called since client validation failed early
     expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  test("should throw PaymishError with status 408 on request timeout", async () => {
+    // Simulate fetch throwing a TimeoutError
+    const timeoutError = new Error("Operation aborted due to timeout");
+    timeoutError.name = "TimeoutError";
+
+    global.fetch.mockRejectedValueOnce(timeoutError);
+
+    try {
+      await paymish.auth.generateToken({
+        public_key: "pk_test_12345",
+        secret_key: "sk_test_67890",
+      });
+
+      throw new Error("Expected request to timeout");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(408);
+      expect(error.message).toContain("timed out");
+    }
+  });
 });
