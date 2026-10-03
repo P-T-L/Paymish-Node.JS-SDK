@@ -35,12 +35,16 @@ class HttpClient {
       // Return clean base URL without trailing slash
       return urlString.replace(/\/+$/, "");
     } catch (error) {
-      if (error instanceof TypeError) {
-        throw new Error(
-          `Invalid baseUrl provided: "${urlString}". Must be a valid URL.`,
-        );
+      if (
+        error.message.includes("protocol") ||
+        error.message.includes("hostname")
+      ) {
+        throw error;
       }
-      throw error;
+
+      throw new Error(
+        `Invalid baseUrl provided: "${urlString}". Must be a valid URL.`,
+      );
     }
   }
 
