@@ -2,8 +2,46 @@ const { PaymishError } = require("./errors");
 
 class HttpClient {
   constructor(options = {}) {
-    this.baseUrl = options.baseUrl || "https://api.paymish.com";
+    const rawBaseUrl = options.baseUrl || "https://api.paymish.com";
+    this.baseUrl = this._validateAndNormalizeBaseUrl(rawBaseUrl);
     this.timeout = options.timeout || 10000; // Default timeout: 10 seconds
+  }
+
+  /**
+   * Validates and normalizes the provided baseUrl to prevent SSRF and protocol misuse
+   * @param {string} urlString
+   * @returns {string} Normalized base URL without trailing slashes
+   */
+  _validateAndNormalizeBaseUrl(urlString) {
+    if (typeof urlString !== "string" || !urlString.trim()) {
+      throw new Error("Invalid baseUrl: Base URL must be a non-empty string");
+    }
+
+    try {
+      const parsedUrl = new URL(urlString);
+
+      // Enforce HTTP/HTTPS protocols (blocks file://, ftp://, gopher://, etc.)
+      if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+        throw new Error(
+          `Invalid baseUrl protocol "${parsedUrl.protocol}". Only "http:" and "https:" are allowed.`,
+        );
+      }
+
+      // Ensure hostname is present
+      if (!parsedUrl.hostname) {
+        throw new Error("Invalid baseUrl: Missing hostname.");
+      }
+
+      // Return clean base URL without trailing slash
+      return urlString.replace(/\/+$/, "");
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error(
+          `Invalid baseUrl provided: "${urlString}". Must be a valid URL.`,
+        );
+      }
+      throw error;
+    }
   }
 
   /**
