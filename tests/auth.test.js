@@ -28,6 +28,10 @@ describe("Auth Module - generateToken()", () => {
     global.fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: {
+        get: (header) =>
+          header === "content-type" ? "application/json" : null,
+      },
       json: jest.fn().mockResolvedValueOnce(mockResponseBody),
     });
 
@@ -72,6 +76,10 @@ describe("Auth Module - generateToken()", () => {
     global.fetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
+      headers: {
+        get: (header) =>
+          header === "content-type" ? "application/json" : null,
+      },
       json: jest.fn().mockResolvedValueOnce(mockErrorBody),
     });
 
@@ -124,6 +132,31 @@ describe("Auth Module - generateToken()", () => {
       expect(error).toBeInstanceOf(PaymishError);
       expect(error.statusCode).toBe(408);
       expect(error.message).toContain("timed out");
+    }
+  });
+
+  test("should handle non-JSON HTML error pages from proxies gracefully", async () => {
+    const htmlErrorPage = "<html><body>502 Bad Gateway</body></html>";
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      statusText: "Bad Gateway",
+      headers: new Map([["content-type", "text/html"]]),
+      text: jest.fn().mockResolvedValueOnce(htmlErrorPage),
+    });
+
+    try {
+      await paymish.auth.generateToken({
+        public_key: "pk_test_12345",
+        secret_key: "sk_test_67890",
+      });
+
+      throw new Error("Expected non-JSON request to fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(502);
+      expect(error.message).toContain("HTML or Non-JSON response");
     }
   });
 });

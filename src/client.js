@@ -31,7 +31,7 @@ class HttpClient {
 
     try {
       const response = await fetch(url, config);
-      const contentType = response.headers.get("content-type") || "";
+      const contentType = response.headers?.get?.("content-type") || "";
       const isJson = contentType.includes("application/json");
 
       let data;
