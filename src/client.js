@@ -1,5 +1,7 @@
 const { PaymishError } = require("./errors");
 
+const { randomUUID } = require("crypto");
+
 class HttpClient {
   constructor(options = {}) {
     const rawBaseUrl = options.baseUrl || "https://api.paymish.com";
@@ -68,7 +70,39 @@ class HttpClient {
     customTimeout = null,
   ) {
     const url = `${this.baseUrl}${endpoint}`;
-    const timeoutMs = customTimeout || this.timeout;
+
+    // Handle case where positional parameter 'options' is passed purely as a headers object
+    const optionsObj = options || {};
+    const isPlainHeadersObj =
+      !optionsObj.idempotencyKey &&
+      !optionsObj.headers &&
+      !optionsObj.customTimeout;
+    const requestHeaders = isPlainHeadersObj
+      ? { ...optionsObj }
+      : { ...(optionsObj.headers || {}) };
+    const timeoutMs = customTimeout || optionsObj.customTimeout || this.timeout;
+
+    // Resolve Idempotency Key (Explicit option > Explicit header > Auto-generated for POST/PUT/PATCH)
+    const explicitIdempotencyKey =
+      optionsObj.idempotencyKey ||
+      requestHeaders["Idempotency-Key"] ||
+      requestHeaders["idempotency-key"];
+    const isStateChanging = ["POST", "PUT", "PATCH"].includes(
+      method.toUpperCase(),
+    );
+    const idempotencyKey =
+      explicitIdempotencyKey ||
+      (isStateChanging ? `sdk_auto_${randomUUID()}` : null);
+
+    // Prepare Base Headers (Ensuring the same key persists across all retries)
+    const finalHeaders = {
+      "Content-Type": "application/json",
+      ...requestHeaders,
+    };
+
+    if (idempotencyKey) {
+      finalHeaders["Idempotency-Key"] = idempotencyKey;
+    }
 
     let attempt = 0;
 
@@ -77,7 +111,7 @@ class HttpClient {
 
       const config = {
         method,
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: finalHeaders,
         signal: AbortSignal.timeout(timeoutMs),
       };
 
