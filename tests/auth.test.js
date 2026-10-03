@@ -115,6 +115,12 @@ describe("Auth Module - generateToken()", () => {
   });
 
   test("should throw PaymishError with status 408 on request timeout", async () => {
+    // Pass maxRetries: 0 so it fails immediately on timeout without retrying
+    const paymishNoRetry = new Paymish({
+      baseUrl: "https://api.paymish.com",
+      maxRetries: 0,
+    });
+
     // Simulate fetch throwing a TimeoutError
     const timeoutError = new Error("Operation aborted due to timeout");
     timeoutError.name = "TimeoutError";
@@ -122,7 +128,7 @@ describe("Auth Module - generateToken()", () => {
     global.fetch.mockRejectedValueOnce(timeoutError);
 
     try {
-      await paymish.auth.generateToken({
+      await paymishNoRetry.auth.generateToken({
         public_key: "pk_test_12345",
         secret_key: "sk_test_67890",
       });
@@ -136,18 +142,25 @@ describe("Auth Module - generateToken()", () => {
   });
 
   test("should handle non-JSON HTML error pages from proxies gracefully", async () => {
+    // Pass maxRetries: 0 so HttpClient does not retry on 502
+    const paymishNoRetry = new Paymish({
+      baseUrl: "https://api.paymish.com",
+      maxRetries: 0,
+    });
     const htmlErrorPage = "<html><body>502 Bad Gateway</body></html>";
 
     global.fetch.mockResolvedValueOnce({
       ok: false,
       status: 502,
       statusText: "Bad Gateway",
-      headers: new Map([["content-type", "text/html"]]),
+      headers: {
+        get: (header) => (header === "content-type" ? "text/html" : null),
+      },
       text: jest.fn().mockResolvedValueOnce(htmlErrorPage),
     });
 
     try {
-      await paymish.auth.generateToken({
+      await paymishNoRetry.auth.generateToken({
         public_key: "pk_test_12345",
         secret_key: "sk_test_67890",
       });
