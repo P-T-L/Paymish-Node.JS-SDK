@@ -5,6 +5,8 @@ class HttpClient {
     const rawBaseUrl = options.baseUrl || "https://api.paymish.com";
     this.baseUrl = this._validateAndNormalizeBaseUrl(rawBaseUrl);
     this.timeout = options.timeout || 10000; // Default timeout: 10 seconds
+    this.maxRetries = options.maxRetries ?? 3;
+    this.retryDelayMs = options.retryDelayMs ?? 500;
   }
 
   /**
@@ -49,6 +51,13 @@ class HttpClient {
   }
 
   /**
+   * Helper method to delay execution for exponential backoff
+   */
+  _sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
    * Helper method for all outbound requests
    */
   async request(
@@ -61,30 +70,41 @@ class HttpClient {
     const url = `${this.baseUrl}${endpoint}`;
     const timeoutMs = customTimeout || this.timeout;
 
-    const config = {
-      method,
-      headers: { "Content-Type": "application/json", ...headers },
-      signal: AbortSignal.timeout(timeoutMs),
-    };
+    let attempt = 0;
 
-    if (body) {
-      config.body = JSON.stringify(body);
-    }
+    while (attempt <= this.maxRetries) {
+      attempt++;
 
-    try {
-      const response = await fetch(url, config);
-      const contentType = response.headers?.get?.("content-type") || "";
-      const isJson = contentType.includes("application/json");
+      const config = {
+        method,
+        headers: { "Content-Type": "application/json", ...headers },
+        signal: AbortSignal.timeout(timeoutMs),
+      };
 
-      let data;
+      if (body) {
+        config.body = JSON.stringify(body);
+      }
 
-      if (isJson) {
-        data = await response.json();
-      } else {
-        // Fallback for non-JSON content (HTML/plain text error pages from WAF or proxies)
-        const rawText = await response.text();
+      try {
+        const response = await fetch(url, config);
+        const contentType = response.headers?.get?.("content-type") || "";
+        const isJson = contentType.includes("application/json");
 
-        if (!response.ok) {
+        let data;
+
+        if (isJson) {
+          data = await response.json();
+        } else {
+          // Fallback for non-JSON content (HTML/plain text error pages from WAF or proxies)
+          const rawText = await response.text();
+
+          // Check if non-JSON response is a retryable 5xx error
+          if (response.status >= 500 && attempt <= this.maxRetries) {
+            const delay = this.retryDelayMs * Math.pow(2, attempt - 1);
+            await this._sleep(delay);
+            continue;
+          }
+
           throw new PaymishError(
             `HTML or Non-JSON response received from server (${response.status} ${response.statusText})`,
             response.status,
@@ -93,36 +113,46 @@ class HttpClient {
           );
         }
 
-        throw new PaymishError(
-          "Unexpected non-JSON response payload received from API server.",
-          response.status,
-          { rawResponseBody: rawText.slice(0, 500) },
-          body,
-        );
-      }
+        // Check if application JSON response is a 5xx error that can be retried
+        if (response.status >= 500 && attempt <= this.maxRetries) {
+          const delay = this.retryDelayMs * Math.pow(2, attempt - 1);
+          await this._sleep(delay);
+          continue;
+        }
 
-      // Handle standard Paymish API application errors
-      if (!response.ok || data.status === "error") {
-        throw new PaymishError(
-          data.message || "An error occurred during the request",
-          response.status,
-          data.errors || null,
-          body,
-        );
-      }
+        // Handle standard client 4xx errors or other unhandled errors
+        if (!response.ok || data.status === "error") {
+          throw new PaymishError(
+            data.message || "An error occurred during the request",
+            response.status,
+            data.errors || null,
+            body,
+          );
+        }
 
-      return data;
-    } catch (error) {
-      if (error.name === "TimeoutError" || error.name === "AbortError") {
-        throw new PaymishError(
-          `Request timed out after ${timeoutMs} ms`,
-          408,
-          { timeout: true },
-          body,
-        );
-      }
+        return data;
+      } catch (error) {
+        const isTimeout =
+          error.name === "TimeoutError" || error.name === "AbortError";
 
-      throw error; // Re-throw if already a PaymishError
+        // Retry network timeouts if attempts remaining
+        if (isTimeout && attempt <= this.maxRetries) {
+          const delay = this.retryDelayMs * Math.pow(2, attempt - 1);
+          await this._sleep(delay);
+          continue;
+        }
+
+        if (isTimeout) {
+          throw new PaymishError(
+            `Request timed out after ${timeoutMs} ms`,
+            408,
+            { timeout: true },
+            body,
+          );
+        }
+
+        throw error; // Re-throw if already a PaymishError or non-retryable error
+      }
     }
   }
 }
