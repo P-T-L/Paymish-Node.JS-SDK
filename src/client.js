@@ -43,7 +43,9 @@ class HttpClient {
         throw error;
       }
 
-      throw new Error(`Invalid baseUrl provided: "${urlString}". Must be a valid URL.`);
+      throw new Error(`Invalid baseUrl provided: "${urlString}". Must be a valid URL.`, {
+        cause: error,
+      });
     }
   }
 
