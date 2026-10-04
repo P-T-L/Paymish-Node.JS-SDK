@@ -65,12 +65,12 @@ main();
 
 When instantiating the Paymish client, you can pass an optional configuration object to customize global HTTP execution behavior:
 
-```javaScript
+```javascript
 const paymish = new Paymish({
-baseUrl: "[https://api.paymish.com](https://api.paymish.com)",
-timeout: 10000, // Request timeout in milliseconds (default: 10000)
-maxRetries: 3, // Max retry attempts for 5xx errors and timeouts (default: 3)
-retryDelayMs: 500, // Initial base delay for exponential backoff in ms (default: 500)
+  baseUrl: "[https://api.paymish.com](https://api.paymish.com)",
+  timeout: 10000, // Request timeout in milliseconds (default: 10000)
+  maxRetries: 3, // Max retry attempts for 5xx errors and timeouts (default: 3)
+  retryDelayMs: 500, // Initial base delay for exponential backoff in ms (default: 500)
 });
 ```
 
@@ -97,16 +97,16 @@ Generates an authentication JWT token using public and secret application keys.
   - `secret_key (string, Required)` — Your Paymish secret key.
 - `options (Object, Optional)` — Custom per-request configuration options (e.g., custom headers or per-request timeout override).
 
-```javaScript
+```javascript
 const tokenResponse = await paymish.auth.generateToken(
-{
-public_key: "pk_test_...",
-secret_key: "sk_test_...",
-},
-{
-idempotencyKey: "custom_idempotency_key_123", // Explicit idempotency key
-customTimeout: 5000, // Override timeout for this specific call
-}
+  {
+    public_key: "pk_test_...",
+    secret_key: "sk_test_...",
+  },
+  {
+    idempotencyKey: "custom_idempotency_key_123", // Explicit idempotency key
+    customTimeout: 5000, // Override timeout for this specific call
+  }
 );
 ```
 
@@ -116,23 +116,23 @@ customTimeout: 5000, // Override timeout for this specific call
 
 All API-level failures, non-JSON response errors, and request timeouts throw a `PaymishError`.
 
-```javaScript
+```javascript
 const Paymish = require("paymish-node.js-sdk");
 const { PaymishError } = Paymish;
 
 try {
-await paymish.auth.generateToken({
-public_key: "invalid_key",
-secret_key: "invalid_key",
-});
+  await paymish.auth.generateToken({
+    public_key: "invalid_key",
+    secret_key: "invalid_key",
+  });
 } catch (error) {
-if (error instanceof PaymishError) {
-console.log(error.name); // "PaymishError"
-console.log(error.statusCode); // e.g., 400, 401, 408, 500
-console.log(error.message); // Human-readable error message
-console.log(error.errors); // Additional error details or server validation payload
-console.log(error.requestData); // Sanitized request payload (sensitive keys automatically redacted)
-}
+  if (error instanceof PaymishError) {
+    console.log(error.name); // "PaymishError"
+    console.log(error.statusCode); // e.g., 400, 401, 408, 500
+    console.log(error.message); // Human-readable error message
+    console.log(error.errors); // Additional error details or server validation payload
+    console.log(error.requestData); // Sanitized request payload (sensitive keys automatically redacted)
+  }
 }
 ```
 
@@ -142,15 +142,15 @@ console.log(error.requestData); // Sanitized request payload (sensitive keys aut
 
 SDK resource methods accept an optional `options` argument that allows overriding headers or request timeout settings for single calls:
 
-```javaScript
+```javascript
 await paymish.auth.generateToken(
-{ public_key: "pk_...", secret_key: "sk_..." },
-{
-headers: {
-"X-Custom-Header": "CustomValue",
-},
-customTimeout: 3000, // Enforce a 3-second timeout for this request only
-}
+  { public_key: "pk_...", secret_key: "sk_..." },
+  {
+    headers: {
+      "X-Custom-Header": "CustomValue",
+    },
+    customTimeout: 3000, // Enforce a 3-second timeout for this request only
+  }
 );
 ```
 
@@ -158,4 +158,4 @@ customTimeout: 3000, // Enforce a 3-second timeout for this request only
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the [ISC](https://www.isc.org/) License.
