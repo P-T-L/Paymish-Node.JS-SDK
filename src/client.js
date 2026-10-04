@@ -27,7 +27,7 @@ class HttpClient {
       // Enforce HTTP/HTTPS protocols (blocks file://, ftp://, gopher://, etc.)
       if (!["http:", "https:"].includes(parsedUrl.protocol)) {
         throw new Error(
-          `Invalid baseUrl protocol "${parsedUrl.protocol}". Only "http:" and "https:" are allowed.`,
+          `Invalid baseUrl protocol "${parsedUrl.protocol}". Only "http:" and "https:" are allowed.`
         );
       }
 
@@ -39,16 +39,11 @@ class HttpClient {
       // Return clean base URL without trailing slash
       return urlString.replace(/\/+$/, "");
     } catch (error) {
-      if (
-        error.message.includes("protocol") ||
-        error.message.includes("hostname")
-      ) {
+      if (error.message.includes("protocol") || error.message.includes("hostname")) {
         throw error;
       }
 
-      throw new Error(
-        `Invalid baseUrl provided: "${urlString}". Must be a valid URL.`,
-      );
+      throw new Error(`Invalid baseUrl provided: "${urlString}". Must be a valid URL.`);
     }
   }
 
@@ -62,21 +57,13 @@ class HttpClient {
   /**
    * Helper method for all outbound requests
    */
-  async request(
-    method,
-    endpoint,
-    body = null,
-    options = {},
-    customTimeout = null,
-  ) {
+  async request(method, endpoint, body = null, options = {}, customTimeout = null) {
     const url = `${this.baseUrl}${endpoint}`;
 
     // Handle case where positional parameter 'options' is passed purely as a headers object
     const optionsObj = options || {};
     const isPlainHeadersObj =
-      !optionsObj.idempotencyKey &&
-      !optionsObj.headers &&
-      !optionsObj.customTimeout;
+      !optionsObj.idempotencyKey && !optionsObj.headers && !optionsObj.customTimeout;
     const requestHeaders = isPlainHeadersObj
       ? { ...optionsObj }
       : { ...(optionsObj.headers || {}) };
@@ -87,12 +74,9 @@ class HttpClient {
       optionsObj.idempotencyKey ||
       requestHeaders["Idempotency-Key"] ||
       requestHeaders["idempotency-key"];
-    const isStateChanging = ["POST", "PUT", "PATCH"].includes(
-      method.toUpperCase(),
-    );
+    const isStateChanging = ["POST", "PUT", "PATCH"].includes(method.toUpperCase());
     const idempotencyKey =
-      explicitIdempotencyKey ||
-      (isStateChanging ? `sdk_auto_${randomUUID()}` : null);
+      explicitIdempotencyKey || (isStateChanging ? `sdk_auto_${randomUUID()}` : null);
 
     // Prepare Base Headers (Ensuring the same key persists across all retries)
     const finalHeaders = {
@@ -143,7 +127,7 @@ class HttpClient {
             `HTML or Non-JSON response received from server (${response.status} ${response.statusText})`,
             response.status,
             { rawResponseBody: rawText.slice(0, 500) },
-            body,
+            body
           );
         }
 
@@ -160,14 +144,13 @@ class HttpClient {
             data.message || "An error occurred during the request",
             response.status,
             data.errors || null,
-            body,
+            body
           );
         }
 
         return data;
       } catch (error) {
-        const isTimeout =
-          error.name === "TimeoutError" || error.name === "AbortError";
+        const isTimeout = error.name === "TimeoutError" || error.name === "AbortError";
 
         // Retry network timeouts if attempts remaining
         if (isTimeout && attempt <= this.maxRetries) {
@@ -181,7 +164,7 @@ class HttpClient {
             `Request timed out after ${timeoutMs} ms`,
             408,
             { timeout: true },
-            body,
+            body
           );
         }
 

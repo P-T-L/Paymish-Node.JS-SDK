@@ -8,17 +8,13 @@ describe("HttpClient Base URL Guard", () => {
   test("should throw an error for non-HTTP protocols (e.g. file://)", () => {
     expect(() => {
       new HttpClient({ baseUrl: "file:///etc/passwd" });
-    }).toThrow(
-      'Invalid baseUrl protocol "file:". Only "http:" and "https:" are allowed.',
-    );
+    }).toThrow('Invalid baseUrl protocol "file:". Only "http:" and "https:" are allowed.');
   });
 
   test("should throw an error for completely invalid URLs", () => {
     expect(() => {
       new HttpClient({ baseUrl: "not-a-valid-url" });
-    }).toThrow(
-      'Invalid baseUrl provided: "not-a-valid-url". Must be a valid URL.',
-    );
+    }).toThrow('Invalid baseUrl provided: "not-a-valid-url". Must be a valid URL.');
   });
 
   test("should accept valid HTTPS and HTTP URLs and trim trailing slashes", () => {
@@ -41,9 +37,7 @@ describe("HttpClient Base URL Guard", () => {
         ok: false,
         status: 502,
         headers: { get: () => "application/json" },
-        json: jest
-          .fn()
-          .mockResolvedValueOnce({ status: "error", message: "Bad Gateway" }),
+        json: jest.fn().mockResolvedValueOnce({ status: "error", message: "Bad Gateway" }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -93,7 +87,7 @@ describe("HttpClient Idempotency Key Support", () => {
       "POST",
       "/v1/payments",
       { amount: 5000 },
-      { idempotencyKey: "custom_key_123" },
+      { idempotencyKey: "custom_key_123" }
     );
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -113,7 +107,7 @@ describe("HttpClient Idempotency Key Support", () => {
       "POST",
       "/v1/payments",
       { amount: 5000 },
-      { headers: { "Idempotency-Key": "header_key_456" } },
+      { headers: { "Idempotency-Key": "header_key_456" } }
     );
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -182,9 +176,7 @@ describe("HttpClient Idempotency Key Support", () => {
       ok: false,
       status: 500,
       headers: { get: () => "application/json" },
-      json: jest
-        .fn()
-        .mockResolvedValueOnce({ status: "error", message: "Server error" }),
+      json: jest.fn().mockResolvedValueOnce({ status: "error", message: "Server error" }),
     });
 
     // Attempt 2: 200 Success
@@ -199,7 +191,7 @@ describe("HttpClient Idempotency Key Support", () => {
       "POST",
       "/v1/transfers",
       { amount: 1000 },
-      { idempotencyKey: "fixed_retry_key_789" },
+      { idempotencyKey: "fixed_retry_key_789" }
     );
 
     expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -207,12 +199,8 @@ describe("HttpClient Idempotency Key Support", () => {
     const [, attempt1Config] = global.fetch.mock.calls[0];
     const [, attempt2Config] = global.fetch.mock.calls[1];
 
-    expect(attempt1Config.headers["Idempotency-Key"]).toBe(
-      "fixed_retry_key_789",
-    );
-    expect(attempt2Config.headers["Idempotency-Key"]).toBe(
-      "fixed_retry_key_789",
-    );
+    expect(attempt1Config.headers["Idempotency-Key"]).toBe("fixed_retry_key_789");
+    expect(attempt2Config.headers["Idempotency-Key"]).toBe("fixed_retry_key_789");
   });
 
   test("should preserve the SAME auto-generated idempotency key across network timeout retries", async () => {

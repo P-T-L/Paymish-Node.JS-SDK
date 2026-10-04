@@ -13,9 +13,7 @@ class Auth {
    */
   async generateToken(credentials, options = {}) {
     if (!credentials || !credentials.public_key || !credentials.secret_key) {
-      throw new Error(
-        "Both public_key and secret_key are required to generate a token.",
-      );
+      throw new Error("Both public_key and secret_key are required to generate a token.");
     }
 
     return this.client.request(
@@ -25,7 +23,7 @@ class Auth {
         public_key: credentials.public_key,
         secret_key: credentials.secret_key,
       },
-      options,
+      options
     );
   }
 }

@@ -29,8 +29,7 @@ describe("Auth Module - generateToken()", () => {
       ok: true,
       status: 200,
       headers: {
-        get: (header) =>
-          header === "content-type" ? "application/json" : null,
+        get: (header) => (header === "content-type" ? "application/json" : null),
       },
       json: jest.fn().mockResolvedValueOnce(mockResponseBody),
     });
@@ -55,13 +54,11 @@ describe("Auth Module - generateToken()", () => {
         }),
         body: JSON.stringify(credentials),
         signal: expect.any(AbortSignal),
-      }),
+      })
     );
 
     expect(result).toEqual(mockResponseBody);
-    expect(result.data.token).toBe(
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fake_jwt_token",
-    );
+    expect(result.data.token).toBe("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fake_jwt_token");
   });
 
   test("should throw PaymishError when API returns invalid credentials (400 Bad Request)", async () => {
@@ -70,9 +67,7 @@ describe("Auth Module - generateToken()", () => {
       status: "error",
       message: "Invalid credentials.",
       errors: {
-        credentials: [
-          "Check the secret key, partner code, and target environment.",
-        ],
+        credentials: ["Check the secret key, partner code, and target environment."],
       },
     };
 
@@ -80,8 +75,7 @@ describe("Auth Module - generateToken()", () => {
       ok: false,
       status: 400,
       headers: {
-        get: (header) =>
-          header === "content-type" ? "application/json" : null,
+        get: (header) => (header === "content-type" ? "application/json" : null),
       },
       json: jest.fn().mockResolvedValueOnce(mockErrorBody),
     });
@@ -94,9 +88,7 @@ describe("Auth Module - generateToken()", () => {
       });
 
       // Force test failure if no error was thrown
-      throw new Error(
-        "Expected generateToken to throw PaymishError, but it succeeded.",
-      );
+      throw new Error("Expected generateToken to throw PaymishError, but it succeeded.");
     } catch (error) {
       expect(error).toBeInstanceOf(PaymishError);
       expect(error.message).toBe("Invalid credentials.");
@@ -107,10 +99,8 @@ describe("Auth Module - generateToken()", () => {
 
   test("should throw a validation error if required keys are missing before making network request", async () => {
     // Testing client-side parameter validation
-    await expect(
-      paymish.auth.generateToken({ public_key: "pk_test_12345" }),
-    ).rejects.toThrow(
-      "Both public_key and secret_key are required to generate a token.",
+    await expect(paymish.auth.generateToken({ public_key: "pk_test_12345" })).rejects.toThrow(
+      "Both public_key and secret_key are required to generate a token."
     );
 
     // Ensure fetch was never called since client validation failed early
