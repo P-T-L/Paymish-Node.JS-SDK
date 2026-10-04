@@ -49,7 +49,10 @@ describe("Auth Module - generateToken()", () => {
       "https://api.paymish.com/api/user-service/external/v1/generate-token",
       expect.objectContaining({
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
         body: JSON.stringify(credentials),
         signal: expect.any(AbortSignal),
       }),

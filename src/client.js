@@ -66,7 +66,7 @@ class HttpClient {
     method,
     endpoint,
     body = null,
-    headers = {},
+    options = {},
     customTimeout = null,
   ) {
     const url = `${this.baseUrl}${endpoint}`;

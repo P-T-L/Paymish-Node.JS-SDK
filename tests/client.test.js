@@ -220,7 +220,7 @@ describe("HttpClient Idempotency Key Support", () => {
     timeoutError.name = "TimeoutError";
 
     // Attempt 1: Timeout error
-    global.fetch.mockResolvedValueOnce(timeoutError);
+    global.fetch.mockRejectedValueOnce(timeoutError);
 
     // Attempt 2: 200 Success
     global.fetch.mockResolvedValueOnce({
@@ -228,6 +228,7 @@ describe("HttpClient Idempotency Key Support", () => {
       status: 200,
       headers: { get: () => "application/json" },
       json: jest.fn().mockResolvedValueOnce({ status: "success" }),
+      text: jest.fn().mockResolvedValueOnce('{"status": "success"}'),
     });
 
     await client.request("POST", "/v1/refunds", { transaction_id: "tx_123" });
