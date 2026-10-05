@@ -1,4 +1,7 @@
 class Auth {
+  /**
+   * @param {import("../client")} client
+   */
   constructor(client) {
     this.client = client;
   }
