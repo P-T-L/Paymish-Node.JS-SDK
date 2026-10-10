@@ -45,6 +45,33 @@ class Business {
       options
     );
   }
+
+  /**
+   * Adds a new business profile
+   * POST /api/user-service/external/v1/add-new-business
+   *
+   * @param {Object} payload - Business creation details
+   * @param {number} payload.countryId - The country identifier
+   * @param {string} payload.businessName - The name of the business
+   * @param {number} payload.businessCategory - The business category identifier
+   * @param {string} [payload.businessDescription] - Optional business description
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async createBusiness(payload, options = {}) {
+    if (!payload || !payload.countryId || !payload.businessName || !payload.businessCategory) {
+      throw new Error(
+        "Invalid payload: 'countryId', 'businessName', and 'businessCategory' are required."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/user-service/external/v1/add-new-business",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Business;
