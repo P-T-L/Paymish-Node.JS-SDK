@@ -29,6 +29,22 @@ class Business {
       options
     );
   }
+
+  /**
+   * Retrieves full details for the authenticated business profile
+   * GET /api/user-service/external/v1/get-business-detail
+   *
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing business details
+   */
+  async getDetails(options = {}) {
+    return this.client.request(
+      "GET",
+      "/api/user-service/external/v1/get-business-detail",
+      null,
+      options
+    );
+  }
 }
 
 module.exports = Business;
