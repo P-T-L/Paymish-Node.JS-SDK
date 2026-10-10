@@ -59,7 +59,12 @@ class Business {
    * @returns {Promise<Object>} API response payload
    */
   async createBusiness(payload, options = {}) {
-    if (!payload || !payload.countryId || !payload.businessName || !payload.businessCategory) {
+    if (
+      !payload ||
+      payload.countryId == null ||
+      !payload.businessName ||
+      payload.businessCategory == null
+    ) {
       throw new Error(
         "Invalid payload: 'countryId', 'businessName', and 'businessCategory' are required."
       );
