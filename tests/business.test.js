@@ -133,3 +133,82 @@ describe("Business Module - changeMode()", () => {
     }
   });
 });
+
+describe("Business Module - getDetails()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve business details (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Record retrieved successfully",
+      data: { reference: "PM-REF-12345", status: "success" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (header) => (header === "content-type" ? "application/json" : null) },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.business.getDetails({ headers: authHeaders });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/user-service/external/v1/get-business-detail",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+    expect(result.data.reference).toBe("PM-REF-12345");
+  });
+
+  test("should throw PaymishError when record is not found (404 Not Found)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Requested record was not found.",
+      errors: { reference: ["Check the identifier and merchant context before retrying."] },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: { get: (header) => (header === "content-type" ? "application/json" : null) },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.business.getDetails();
+      throw new Error("Expected getDetails to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.message).toBe("Requested record was not found.");
+      expect(error.statusCode).toBe(404);
+      expect(error.errors).toHaveProperty("reference");
+      expect(error.errors.reference).toContain(
+        "Check the identifier and merchant context before retrying."
+      );
+    }
+  });
+});
