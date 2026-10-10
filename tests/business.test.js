@@ -317,3 +317,90 @@ describe("Business Module - createBusiness()", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("Business Module - listBusinesses()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve list of businesses (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Record retrieved successfully",
+      data: {
+        reference: "PM-REF-12345",
+        status: "success",
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.business.listBusinesses({ headers: authHeaders });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/user-service/external/v1/business-list",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when unauthorized or record not found (401 Unauthorized)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Requested record was not found.",
+      errors: {
+        reference: ["Check the identifier and merchant context before retrying."],
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.business.listBusinesses();
+      throw new Error("Expected listBusinesses to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.message).toBe("Requested record was not found.");
+      expect(error.statusCode).toBe(401);
+      expect(error.errors).toHaveProperty("reference");
+      expect(error.errors.reference).toContain(
+        "Check the identifier and merchant context before retrying."
+      );
+    }
+  });
+});
