@@ -212,3 +212,108 @@ describe("Business Module - getDetails()", () => {
     }
   });
 });
+
+describe("Business Module - createBusiness()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully create a new business (200 OK)", async () => {
+    const mockResponseBody = {
+      message: "Business created successfully.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      countryId: 1,
+      businessName: "24",
+      businessCategory: 2,
+      businessDescription: "234",
+    };
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.business.createBusiness(payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/user-service/external/v1/add-new-business",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when payload fails API validation (400 Bad Request)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Invalid request payload. Check `countryId` and try again.",
+      errors: {
+        countryId: ["`countryId` is required."],
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      // Pass valid types to bypass client-side check so API response triggers PaymishError
+      await paymish.business.createBusiness({
+        countryId: 0, // Mocking invalid scenario sent to API
+        businessName: "Test",
+        businessCategory: 1,
+      });
+      throw new Error("Expected createBusiness to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.message).toBe("Invalid request payload. Check `countryId` and try again.");
+      expect(error.statusCode).toBe(400);
+      expect(error.errors).toHaveProperty("countryId");
+      expect(error.errors.countryId).toContain("`countryId` is required.");
+    }
+  });
+
+  test("should throw early validation error if required fields are missing", async () => {
+    await expect(
+      paymish.business.createBusiness({
+        businessName: "Test",
+        businessCategory: 1,
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'countryId', 'businessName', and 'businessCategory' are required."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
