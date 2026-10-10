@@ -39,12 +39,22 @@ const paymish = new Paymish({
 
 async function main() {
   try {
-    const response = await paymish.auth.generateToken({
+    // 1. Generate Auth Token
+    const authResponse = await paymish.auth.generateToken({
       public_key: "pk_test_123456789",
       secret_key: "sk_test_987654321",
     });
 
-    console.log("Token Generated:", response);
+    console.log("Token Generated:", authResponse);
+
+    // 2. Interact with Business API
+    const businessDetails = await paymish.business.getDetails({
+      headers: {
+        Authorization: `Bearer ${authResponse.data.token}`,
+      },
+    });
+
+    console.log("Business Profile:", businessDetails);
   } catch (error) {
     if (error instanceof Paymish.PaymishError) {
       console.error(`Paymish Error [${error.statusCode}]:`, error.message);
@@ -90,6 +100,7 @@ const paymish = new Paymish({
 ### Auth Resource (`paymish.auth`)
 
 `generateToken(credentials, [options])`
+
 Generates an authentication JWT token using public and secret application keys.
 
 - `credentials (Object, Required)`
@@ -110,6 +121,75 @@ const tokenResponse = await paymish.auth.generateToken(
 );
 ```
 
+### Business Resource (`paymish.business`)
+
+`changeMode(payload, [options])`
+
+Toggles or changes the environment mode of the business between Live and "not Live" environments.
+
+- `payload (Object \| boolean, Required)` — Pass `{ isLive: boolean }` or directly a boolean value (`true` for Live, `false` for "not Live").
+- `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
+
+```javascript
+// Passing object parameter
+const response = await paymish.business.changeMode(
+  { isLive: false },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+
+// Or passing a direct boolean
+const response = await paymish.business.changeMode(true, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+`getDetails([options])`
+
+Retrieves full details for the authenticated business profile.
+
+- `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
+
+```javascript
+const businessProfile = await paymish.business.getDetails({
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+`createBusiness(payload, [options])`
+
+Adds a new business profile under the account.
+
+- `payload (Object, Required)`
+  - `countryId (number, Required)` — Country identifier.
+  - `businessName (string, Required)` — Name of the business.
+  - `businessCategory (number, Required)` — Category identifier.
+  - `businessDescription (string, Optional)` — Description of the business.
+- `options (Object, Optional)` — Custom per-request configuration options.
+
+```javascript
+const newBusiness = await paymish.business.createBusiness(
+  {
+    countryId: 1,
+    businessName: "Acme Corp",
+    businessCategory: 2,
+    businessDescription: "E-commerce platform",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`listBusinesses([options])`
+
+Retrieves the list of businesses associated with the account.
+
+- `options (Object, Optional)` — Custom per-request configuration options.
+
+```javaScript
+const businesses = await paymish.business.listBusinesses({
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
 ---
 
 ## Error Handling
@@ -121,10 +201,7 @@ const Paymish = require("paymish-node.js-sdk");
 const { PaymishError } = Paymish;
 
 try {
-  await paymish.auth.generateToken({
-    public_key: "invalid_key",
-    secret_key: "invalid_key",
-  });
+  await paymish.business.getDetails();
 } catch (error) {
   if (error instanceof PaymishError) {
     console.log(error.name); // "PaymishError"
@@ -143,15 +220,13 @@ try {
 SDK resource methods accept an optional `options` argument that allows overriding headers or request timeout settings for single calls:
 
 ```javascript
-await paymish.auth.generateToken(
-  { public_key: "pk_...", secret_key: "sk_..." },
-  {
-    headers: {
-      "X-Custom-Header": "CustomValue",
-    },
-    customTimeout: 3000, // Enforce a 3-second timeout for this request only
-  }
-);
+await paymish.business.getDetails({
+  headers: {
+    Authorization: "Bearer YOUR_SECRET_KEY",
+    "X-Custom-Header": "CustomValue",
+  },
+  customTimeout: 3000, // Enforce a 3-second timeout for this request only
+});
 ```
 
 ---
