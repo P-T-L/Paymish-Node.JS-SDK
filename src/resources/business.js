@@ -77,6 +77,17 @@ class Business {
       options
     );
   }
+
+  /**
+   * Retrieves the list of businesses associated with the account.
+   * GET /api/user-service/external/v1/business-list
+   *
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the list of businesses
+   */
+  async listBusinesses(options = {}) {
+    return this.client.request("GET", "/api/user-service/external/v1/business-list", null, options);
+  }
 }
 
 module.exports = Business;
