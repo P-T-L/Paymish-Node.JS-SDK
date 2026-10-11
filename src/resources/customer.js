@@ -125,6 +125,37 @@ class Customer {
       options
     );
   }
+
+  /**
+   * Retrieves customer details by ID
+   * GET /api/customer-service/external/v1/get-customer-by-id
+   *
+   * @param {number|Object} identifier - Customer integer ID or an options object containing customerId
+   * @param {number} [identifier.customerId] - Customer integer identifier (if passed as an object)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing customer details
+   */
+  async getCustomerById(identifier, options = {}) {
+    const rawId =
+      typeof identifier === "object" && identifier !== null
+        ? (identifier.customerId ?? identifier.id ?? identifier.customerReference)
+        : identifier;
+    const customerId = Number(rawId);
+
+    if (
+      rawId == null ||
+      rawId === "" ||
+      typeof rawId === "boolean" ||
+      isNaN(customerId) ||
+      !Number.isInteger(customerId)
+    ) {
+      throw new Error("Invalid parameter: 'customerId' must be a valid integer.");
+    }
+
+    const endpoint = `/api/customer-service/external/v1/get-customer-by-id?customerId=${customerId}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Customer;
