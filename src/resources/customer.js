@@ -78,22 +78,26 @@ class Customer {
    * @returns {Promise<Object>} API response payload containing the customer list
    */
   async listCustomers(params = {}, options = {}) {
+    // Merge provided params with default pagination values if omitted
+    const queryParams = {
+      page: 1,
+      limit: 10,
+      ...params,
+    };
     let endpoint = "/api/customer-service/external/v1/list";
+    const searchParams = new URLSearchParams();
 
-    if (params && Object.keys(params).length > 0) {
-      const searchParams = new URLSearchParams();
-
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, value);
-        }
-      }
-      const queryString = searchParams.toString();
-
-      if (queryString) {
-        endpoint += `?${queryString}`;
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value);
       }
     }
+
+    const queryString = searchParams.toString();
+    if (queryString) {
+      endpoint += `?${queryString}`;
+    }
+
     return this.client.request("GET", endpoint, null, options);
   }
 }
