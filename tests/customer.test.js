@@ -292,3 +292,111 @@ describe("Customer Module - updateCustomer()", () => {
     }
   });
 });
+
+describe("Customer Module - listCustomers()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve a list of customers with query parameters (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Record retrieved successfully",
+      data: {
+        customers: [{ customerReference: "CUST-001", email: "john@example.com" }],
+        pagination: { total: 1, page: 1, limit: 10 },
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const queryParams = { businessId: 123, page: 1, limit: 10, search: "John" };
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+
+    const result = await paymish.customer.listCustomers(queryParams, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/list?businessId=123&page=1&limit=10&search=John",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should successfully retrieve a list of customers without query parameters (200 OK)", async () => {
+    const mockResponseBody = { status: "success", data: [] };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const result = await paymish.customer.listCustomers();
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/list",
+      expect.objectContaining({ method: "GET" })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when listing fails due to invalid parameters (400 Bad Request)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Invalid request payload. Check `businessId` and try again.",
+      errors: { businessId: ["`businessId` is required."] },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.customer.listCustomers({ page: 1 });
+      throw new Error("Expected listCustomers to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.errors).toHaveProperty("businessId");
+    }
+  });
+});
