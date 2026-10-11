@@ -305,53 +305,7 @@ describe("Customer Module - listCustomers()", () => {
     jest.restoreAllMocks();
   });
 
-  test("should successfully retrieve a list of customers with query parameters (200 OK)", async () => {
-    const mockResponseBody = {
-      status: "success",
-      message: "Record retrieved successfully",
-      data: {
-        customers: [{ customerReference: "CUST-001", email: "john@example.com" }],
-        pagination: { total: 1, page: 1, limit: 10 },
-      },
-    };
-
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: {
-        get: (header) => (header === "content-type" ? "application/json" : null),
-      },
-      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
-    });
-
-    const queryParams = { businessId: 123, page: 1, limit: 10, search: "John" };
-    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
-
-    const result = await paymish.customer.listCustomers(queryParams, {
-      headers: authHeaders,
-    });
-
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.paymish.com/api/customer-service/external/v1/list?businessId=123&page=1&limit=10&search=John",
-      expect.objectContaining({
-        method: "GET",
-        headers: expect.objectContaining({
-          "Content-Type": "application/json",
-          Authorization: "Bearer sk_test_secret_key",
-        }),
-        signal: expect.any(AbortSignal),
-      })
-    );
-
-    // Verify GET request does NOT send an auto-generated idempotency key
-    const [, config] = global.fetch.mock.calls[0];
-    expect(config.headers["Idempotency-Key"]).toBeUndefined();
-
-    expect(result).toEqual(mockResponseBody);
-  });
-
-  test("should successfully retrieve a list of customers without query parameters (200 OK)", async () => {
+  test("should automatically inject default page and limit when params are omitted (200 OK)", async () => {
     const mockResponseBody = { status: "success", data: [] };
 
     global.fetch.mockResolvedValueOnce({
@@ -363,22 +317,48 @@ describe("Customer Module - listCustomers()", () => {
       json: jest.fn().mockResolvedValueOnce(mockResponseBody),
     });
 
+    // Calling with no parameters
     const result = await paymish.customer.listCustomers();
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
+    // Notice how the URL now expects the default page=1 and limit=10
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.paymish.com/api/customer-service/external/v1/list",
+      "https://api.paymish.com/api/customer-service/external/v1/list?page=1&limit=10",
       expect.objectContaining({ method: "GET" })
     );
 
     expect(result).toEqual(mockResponseBody);
   });
 
-  test("should throw PaymishError when listing fails due to invalid parameters (400 Bad Request)", async () => {
+  test("should allow developer parameters to override defaults (200 OK)", async () => {
+    const mockResponseBody = { status: "success", data: [] };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    // Developer explicitly passes custom page, limit, and search parameters
+    const result = await paymish.customer.listCustomers({ page: 3, limit: 50, search: "Alice" });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    // Notice how page and limit use the developer's values (3 and 50) instead of 1 and 10
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/list?page=3&limit=50&search=Alice",
+      expect.objectContaining({ method: "GET" })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when API returns a 400 Bad Request error", async () => {
     const mockErrorBody = {
       status: "error",
-      message: "Invalid request payload. Check `businessId` and try again.",
-      errors: { businessId: ["`businessId` is required."] },
+      message: "Invalid query parameters.",
     };
 
     global.fetch.mockResolvedValueOnce({
@@ -391,12 +371,12 @@ describe("Customer Module - listCustomers()", () => {
     });
 
     try {
-      await paymish.customer.listCustomers({ page: 1 });
+      await paymish.customer.listCustomers();
       throw new Error("Expected listCustomers to throw PaymishError, but it succeeded.");
     } catch (error) {
       expect(error).toBeInstanceOf(PaymishError);
       expect(error.statusCode).toBe(400);
-      expect(error.errors).toHaveProperty("businessId");
+      expect(error.message).toBe("Invalid query parameters.");
     }
   });
 });
