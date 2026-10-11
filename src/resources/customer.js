@@ -68,6 +68,34 @@ class Customer {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of customers
+   * GET /api/customer-service/external/v1/list
+   *
+   * @param {Object} [params] - Query parameters for filtering and pagination (e.g. businessId, page, limit, search)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the customer list
+   */
+  async listCustomers(params = {}, options = {}) {
+    let endpoint = "/api/customer-service/external/v1/list";
+
+    if (params && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, value);
+        }
+      }
+      const queryString = searchParams.toString();
+
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Customer;
