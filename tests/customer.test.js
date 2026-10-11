@@ -528,3 +528,164 @@ describe("Customer Module - blacklistCustomer()", () => {
     }
   });
 });
+
+describe("Customer Module - getCustomerById()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve customer details by direct integer ID (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Record retrieved successfully",
+      data: { customerId: 101, email: "john@example.com" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.customer.getCustomerById(101, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/get-customer-by-id?customerId=101",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should support passing an object payload containing customerId integer", async () => {
+    const mockResponseBody = {
+      status: "success",
+      data: { customerId: 202 },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const result = await paymish.customer.getCustomerById({ customerId: 202 });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/get-customer-by-id?customerId=202",
+      expect.objectContaining({ method: "GET" })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if customerId is missing or empty", async () => {
+    await expect(paymish.customer.getCustomerById()).rejects.toThrow(
+      "Invalid parameter: 'customerId' must be a valid integer."
+    );
+
+    await expect(paymish.customer.getCustomerById("")).rejects.toThrow(
+      "Invalid parameter: 'customerId' must be a valid integer."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw early validation error if customerId is not a valid integer", async () => {
+    // Non-numeric string ID
+    await expect(paymish.customer.getCustomerById("CUST-REF-ABC")).rejects.toThrow(
+      "Invalid parameter: 'customerId' must be a valid integer."
+    );
+
+    // Floating-point number
+    await expect(paymish.customer.getCustomerById(12.34)).rejects.toThrow(
+      "Invalid parameter: 'customerId' must be a valid integer."
+    );
+
+    // Boolean value
+    await expect(paymish.customer.getCustomerById(true)).rejects.toThrow(
+      "Invalid parameter: 'customerId' must be a valid integer."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when customer is not found (404 Not Found)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Customer not found.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.customer.getCustomerById(9999);
+      throw new Error("Expected getCustomerById to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(404);
+      expect(error.message).toBe("Customer not found.");
+    }
+  });
+
+  test("should throw PaymishError when request is unauthorized (401 Unauthorized)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Unauthorized access.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.customer.getCustomerById(101);
+      throw new Error("Expected getCustomerById to throw 401 PaymishError");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(401);
+      expect(error.message).toContain("Unauthorized");
+    }
+  });
+});
