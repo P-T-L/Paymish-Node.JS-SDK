@@ -100,6 +100,31 @@ class Customer {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Blacklists or whitelists a customer
+   * PUT /api/customer-service/external/v1/black-listed
+   *
+   * @param {Object} payload - Payload containing blacklist details
+   * @param {string} payload.customerReference - Reference ID for the customer (required)
+   * @param {boolean} payload.isBlackListed - Flag indicating if customer is blacklisted (true) or whitelisted (false) (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async blacklistCustomer(payload, options = {}) {
+    if (!payload || !payload.customerReference || typeof payload.isBlackListed !== "boolean") {
+      throw new Error(
+        "Invalid payload: 'customerReference' (string) and 'isBlackListed' (boolean) are required fields."
+      );
+    }
+
+    return this.client.request(
+      "PUT",
+      "/api/customer-service/external/v1/black-listed",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Customer;
