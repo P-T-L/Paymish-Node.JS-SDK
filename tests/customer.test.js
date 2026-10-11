@@ -380,3 +380,151 @@ describe("Customer Module - listCustomers()", () => {
     }
   });
 });
+
+describe("Customer Module - blacklistCustomer()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully blacklist a customer (200 OK)", async () => {
+    const mockResponseBody = {
+      message: "Update customer status successfully.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      customerReference: "CUST_49089e7a-5000-4ab1-b107-f921feec0468",
+      isBlackListed: true,
+    };
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.customer.blacklistCustomer(payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/black-listed",
+      expect.objectContaining({
+        method: "PUT",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should successfully whitelist a customer by passing isBlackListed: false (200 OK)", async () => {
+    const mockResponseBody = {
+      message: "Update customer status successfully.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      customerReference: "CUST_49089e7a-5000-4ab1-b107-f921feec0468",
+      isBlackListed: false,
+    };
+
+    const result = await paymish.customer.blacklistCustomer(payload);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/customer-service/external/v1/black-listed",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify(payload),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error when required fields are missing or invalid", async () => {
+    // Missing isBlackListed
+    await expect(
+      paymish.customer.blacklistCustomer({
+        customerReference: "CUST_12345",
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'customerReference' (string) and 'isBlackListed' (boolean) are required fields."
+    );
+
+    // Non-boolean isBlackListed
+    await expect(
+      paymish.customer.blacklistCustomer({
+        customerReference: "CUST_12345",
+        isBlackListed: "true",
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'customerReference' (string) and 'isBlackListed' (boolean) are required fields."
+    );
+
+    // Missing customerReference
+    await expect(
+      paymish.customer.blacklistCustomer({
+        isBlackListed: true,
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'customerReference' (string) and 'isBlackListed' (boolean) are required fields."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when server responds with 400 Bad Request", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Bad request.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.customer.blacklistCustomer({
+        customerReference: "CUST_INVALID",
+        isBlackListed: true,
+      });
+      throw new Error("Expected blacklistCustomer to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe("Bad request.");
+    }
+  });
+});
