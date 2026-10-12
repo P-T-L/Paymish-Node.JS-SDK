@@ -25,12 +25,37 @@ class TransactionCustomer {
           searchParams.append(key, value);
         }
       }
+
       const queryString = searchParams.toString();
       if (queryString) {
         endpoint += `?${queryString}`;
       }
     }
+
     return this.client.request("GET", endpoint, null, options);
+  }
+
+  /**
+   * Creates a new customer in the transaction service
+   * POST /api/transaction-service/external/v1/customers
+   *
+   * @param {Object} payload - Payload containing customer creation details
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload containing the created customer record
+   */
+  async createCustomer(payload, options = {}) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error(
+        "Invalid payload: A valid payload object is required to create a transaction customer."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/customers",
+      payload,
+      options
+    );
   }
 }
 
