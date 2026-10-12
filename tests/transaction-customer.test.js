@@ -288,3 +288,125 @@ describe("TransactionCustomer Module - getCustomerById()", () => {
     }
   });
 });
+
+describe("TransactionCustomer Module - updateCustomer()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully update a transaction customer by ID (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Customer updated successfully",
+      data: { id: "tx_cust_123", email: "updated@example.com" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = { email: "updated@example.com", firstName: "Jonathan" };
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+
+    const result = await paymish.transactionCustomer.updateCustomer("tx_cust_123", payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/customers/tx_cust_123",
+      expect.objectContaining({
+        method: "PUT",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should support passing an object identifier containing customer id", async () => {
+    const mockResponseBody = { status: "success", message: "Updated" };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = { firstName: "Jane" };
+    const result = await paymish.transactionCustomer.updateCustomer({ id: "tx_cust_456" }, payload);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/customers/tx_cust_456",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify(payload),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if customerId or payload is missing", async () => {
+    // Missing customerId
+    await expect(
+      paymish.transactionCustomer.updateCustomer("", { firstName: "Test" })
+    ).rejects.toThrow(
+      "Invalid parameter: 'customerId' (or 'id') is required to update a customer."
+    );
+
+    // Missing payload
+    await expect(paymish.transactionCustomer.updateCustomer("tx_cust_123", null)).rejects.toThrow(
+      "Invalid payload: A valid payload object is required to update a transaction customer."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when server responds with 404 Not Found", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Customer not found.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.transactionCustomer.updateCustomer("non_existent", { firstName: "Test" });
+      throw new Error("Expected updateCustomer to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(404);
+      expect(error.message).toBe("Customer not found.");
+    }
+  });
+});
