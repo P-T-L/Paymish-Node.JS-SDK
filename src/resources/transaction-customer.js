@@ -80,6 +80,38 @@ class TransactionCustomer {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates an existing transaction customer by ID
+   * PUT /api/transaction-service/external/v1/customers/{id}
+   *
+   * @param {string|number|Object} identifier - Customer ID or options object containing id/customerId
+   * @param {Object} payload - Payload containing updated customer details
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateCustomer(identifier, payload, options = {}) {
+    const customerId =
+      typeof identifier === "object" && identifier !== null
+        ? identifier.id || identifier.customerId
+        : identifier;
+
+    if (customerId == null || customerId === "") {
+      throw new Error(
+        "Invalid parameter: 'customerId' (or 'id') is required to update a customer."
+      );
+    }
+
+    if (!payload || typeof payload !== "object") {
+      throw new Error(
+        "Invalid payload: A valid payload object is required to update a transaction customer."
+      );
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/customers/${encodeURIComponent(customerId)}`;
+
+    return this.client.request("PUT", endpoint, payload, options);
+  }
 }
 
 module.exports = TransactionCustomer;
