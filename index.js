@@ -3,7 +3,7 @@ const { PaymishError } = require("./src/errors");
 const Auth = require("./src/resources/auth");
 const Business = require("./src/resources/business");
 const Customer = require("./src/resources/customer");
-const TransactionCustomer = require("./src/resources/transactionCustomer");
+const TransactionCustomer = require("./src/resources/transaction-customer");
 
 class Paymish {
   constructor(options = {}) {
