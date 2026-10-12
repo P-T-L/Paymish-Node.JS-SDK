@@ -57,6 +57,29 @@ class TransactionCustomer {
       options
     );
   }
+
+  /**
+   * Retrieves transaction customer details by ID
+   * GET /api/transaction-service/external/v1/customers/{id}
+   *
+   * @param {string|number|Object} identifier - Customer ID or an options object containing id/customerId
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing transaction customer details
+   */
+  async getCustomerById(identifier, options = {}) {
+    const customerId =
+      typeof identifier === "object" && identifier !== null
+        ? identifier.id || identifier.customerId
+        : identifier;
+
+    if (customerId == null || customerId === "") {
+      throw new Error("Invalid parameter: 'customerId' (or 'id') is required.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/customers/${encodeURIComponent(customerId)}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = TransactionCustomer;
