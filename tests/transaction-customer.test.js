@@ -83,3 +83,94 @@ describe("TransactionCustomer Module - listCustomers()", () => {
     }
   });
 });
+
+describe("TransactionCustomer Module - createCustomer()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully create a transaction customer (201 Created or 200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Customer created successfully",
+      data: { customerId: "tx_cust_999", email: "test@example.com" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      email: "test@example.com",
+      firstName: "John",
+      lastName: "Doe",
+    };
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.transactionCustomer.createCustomer(payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/customers",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if payload is missing or invalid", async () => {
+    await expect(paymish.transactionCustomer.createCustomer(null)).rejects.toThrow(
+      "Invalid payload: A valid payload object is required to create a transaction customer."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when server responds with 400 Bad Request", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Validation failed for customer creation.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.transactionCustomer.createCustomer({ email: "invalid" });
+      throw new Error("Expected createCustomer to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe("Validation failed for customer creation.");
+    }
+  });
+});
