@@ -190,6 +190,140 @@ const businesses = await paymish.business.listBusinesses({
 });
 ```
 
+### Customer Resource (paymish.customer)
+
+`createCustomer(payload, [options])`
+
+Creates a new customer record.
+
+- `payload (Object, Required)`
+  - `email (string, Required)` — Customer email address.
+  - `firstName (string, Required)` — Customer first name.
+  - `lastName (string, Required)` — Customer last name.
+  - `phoneNumber (string, Required)` — Customer phone number.
+  - `countryId (number, Required)` — Country identifier.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const customer = await paymish.customer.createCustomer(
+  {
+    email: "john.doe@example.com",
+    firstName: "John",
+    lastName: "Doe",
+    phoneNumber: "+1234567890",
+    countryId: 1,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`updateCustomer(payload, [options])`
+
+Updates an existing customer record.
+
+- `payload (Object, Required)`
+  - `customerReference (string, Required)` — The reference ID of the customer.
+  - Other updatable profile properties.
+- `options (Object, Optional)` — Custom per-request options.
+
+`listCustomers([params], [options])`
+
+Retrieves a paginated list of customers. Automatically defaults to `page: 1` and `limit: 10` if omitted.
+
+- `params (Object, Optional)` — Query parameters (e.g., `{ page: 2, limit: 20, search: "John" }`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const customers = await paymish.customer.listCustomers(
+  { page: 1, limit: 15 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`blacklistCustomer(payload, [options])`
+
+Blacklists or whitelists a customer profile.
+
+- `payload (Object, Required)`
+  - `customerReference (string, Required)` — The reference ID of the customer.
+  - `isBlackListed (boolean, Required)` — Set true to blacklist or false to whitelist.
+- options (Object, Optional) — Custom per-request options.
+
+```javaScript
+await paymish.customer.blacklistCustomer(
+  {
+    customerReference: "CUST_12345",
+    isBlackListed: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`getCustomerById(customerId, [options])`
+
+Retrieves customer details by integer ID.
+
+- `customerId (number, Required)` — The customer's integer ID (supports passing as a direct number or via { customerId: number }).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const customerDetails = await paymish.customer.getCustomerById(101, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+### TransactionCustomer Resource (paymish.transactionCustomer)
+
+`listCustomers([params], [options])`
+
+Retrieves a paginated list of transaction-service customers.
+
+- `params (Object, Optional)` — Query parameters for filtering and pagination.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const txCustomers = await paymish.transactionCustomer.listCustomers(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`createCustomer(payload, [options])`
+
+Creates a new customer in the transaction service.
+
+- `payload (Object, Required)` — Customer details payload.
+- `options (Object, Optional)` — Custom per-request options.
+
+`getCustomerById(identifier, [options])`
+
+Retrieves transaction customer details by ID (supports string or numeric IDs).
+
+- `identifier (string | number | Object, Required)` — Customer ID string/number or options object containing id or customerId.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const txCustomer = await paymish.transactionCustomer.getCustomerById("tx_cust_123", {
+`headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+`updateCustomer(identifier, payload, [options])`
+
+Updates an existing transaction customer by ID.
+
+- `identifier (string | number | Object, Required)` — Customer ID or options object.
+- `payload (Object, Required)` — Updated customer properties.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+await paymish.transactionCustomer.updateCustomer(
+  "tx_cust_123",
+  { firstName: "Jonathan" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
