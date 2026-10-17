@@ -448,3 +448,114 @@ describe("DedicatedVirtualAccount Module - updateAccountByCustomerId()", () => {
     }
   });
 });
+
+describe("DedicatedVirtualAccount Module - requeryAccount()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully requery virtual account with required and optional query parameters (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Virtual account requery successful",
+      data: { accountNumber: "1234567890", status: "ACTIVE" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const queryParams = {
+      account_number: "1234567890",
+      provider_slug: "test-provider",
+      date: "2026-10-17",
+    };
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+
+    const result = await paymish.dedicatedVirtualAccount.requeryAccount(queryParams, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts/requery?account_number=1234567890&provider_slug=test-provider&date=2026-10-17",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if required query parameters are missing", async () => {
+    // Missing provider_slug
+    await expect(
+      paymish.dedicatedVirtualAccount.requeryAccount({ account_number: "1234567890" })
+    ).rejects.toThrow(
+      "Invalid parameters: 'account_number' and 'provider_slug' are required query parameters."
+    );
+
+    // Missing account_number
+    await expect(
+      paymish.dedicatedVirtualAccount.requeryAccount({ provider_slug: "test-provider" })
+    ).rejects.toThrow(
+      "Invalid parameters: 'account_number' and 'provider_slug' are required query parameters."
+    );
+
+    // Completely empty parameters object
+    await expect(paymish.dedicatedVirtualAccount.requeryAccount({})).rejects.toThrow(
+      "Invalid parameters: 'account_number' and 'provider_slug' are required query parameters."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when requery fails (400 Bad Request)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Invalid account number or provider slug provided.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.dedicatedVirtualAccount.requeryAccount({
+        account_number: "invalid",
+        provider_slug: "invalid-provider",
+      });
+      throw new Error("Expected requeryAccount to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe("Invalid account number or provider slug provided.");
+    }
+  });
+});
