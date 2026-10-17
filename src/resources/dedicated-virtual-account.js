@@ -112,6 +112,41 @@ class DedicatedVirtualAccount {
 
     return this.client.request("PUT", endpoint, payload, options);
   }
+
+  /**
+   * Requeries the status of a dedicated virtual account
+   * GET /api/transaction-service/external/v1/dedicated-virtual-accounts/requery
+   *
+   * @param {Object} params - Query parameters for requerying (account_number and provider_slug are required)
+   * @param {string} params.account_number - The account number to requery
+   * @param {string} params.provider_slug - The bank provider slug (e.g. gtb, zenith, wema-bank)
+   * @param {string} [params.date] - Optional date filter
+   * @param {Object} [options] Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing requery results
+   */
+  async requeryAccount(params = {}, options = {}) {
+    if (!params || !params.account_number || !params.provider_slug) {
+      throw new Error(
+        "Invalid parameters: 'account_number' and 'provider_slug' are required query parameters."
+      );
+    }
+
+    let endpoint = "/api/transaction-service/external/v1/dedicated-virtual-accounts/requery";
+    const searchParams = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value);
+      }
+    }
+
+    const queryString = searchParams.toString();
+    if (queryString) {
+      endpoint += `?${queryString}`;
+    }
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = DedicatedVirtualAccount;

@@ -73,7 +73,7 @@ class Customer {
    * Retrieves a paginated list of customers
    * GET /api/customer-service/external/v1/list
    *
-   * @param {Object} [params] - Query parameters for filtering and pagination (e.g. businessId, page, limit, search)
+   * @param {Object} [params] - Query parameters for filtering and pagination (e.g. page, limit, search)
    * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
    * @returns {Promise<Object>} API response payload containing the customer list
    */
