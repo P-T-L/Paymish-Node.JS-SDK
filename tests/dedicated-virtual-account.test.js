@@ -94,3 +94,108 @@ describe("DedicatedVirtualAccount Module - createAccount()", () => {
     }
   });
 });
+
+describe("DedicatedVirtualAccount Module - listAccounts()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve accounts with default page and limit (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Accounts retrieved successfully",
+      data: { accounts: [] },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.dedicatedVirtualAccount.listAccounts(
+      {},
+      {
+        headers: authHeaders,
+      }
+    );
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts?page=1&limit=10",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should allow developer parameters to override default pagination", async () => {
+    const mockResponseBody = { status: "success", data: { accounts: [{ accountNumber: "123" }] } };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const result = await paymish.dedicatedVirtualAccount.listAccounts({ page: 2, limit: 25 });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts?page=2&limit=25",
+      expect.objectContaining({ method: "GET" })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when server responds with 400 Bad Request", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Invalid query parameters.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.dedicatedVirtualAccount.listAccounts({ page: -1 });
+      throw new Error("Expected listAccounts to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe("Invalid query parameters.");
+    }
+  });
+});
