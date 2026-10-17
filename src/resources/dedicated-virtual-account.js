@@ -55,6 +55,31 @@ class DedicatedVirtualAccount {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves a dedicated virtual account by customer ID
+   * GET /api/transaction-service/external/v1/dedicated-virtual-accounts/{customerId}
+   *
+   * @param {string|number|Object} identifier - Customer ID or options object containing customerId/id
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the virtual account details
+   */
+  async getAccountByCustomerId(identifier, options = {}) {
+    const customerId =
+      typeof identifier === "object" && identifier !== null
+        ? identifier.customerId || identifier.id
+        : identifier;
+
+    if (customerId == null || customerId === "") {
+      throw new Error(
+        "Invalid parameter: 'customerId' is required to retrieve a dedicated virtual account."
+      );
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/dedicated-virtual-accounts/${encodeURIComponent(customerId)}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = DedicatedVirtualAccount;
