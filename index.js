@@ -3,6 +3,7 @@ const { PaymishError } = require("./src/errors");
 const Auth = require("./src/resources/auth");
 const Business = require("./src/resources/business");
 const Customer = require("./src/resources/customer");
+const DedicatedVirtualAccount = require("./src/resources/dedicated-virtual-account");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 
 class Paymish {
@@ -13,6 +14,7 @@ class Paymish {
     this.business = new Business(this.client);
     this.customer = new Customer(this.client);
     this.transactionCustomer = new TransactionCustomer(this.client);
+    this.dedicatedVirtualAccount = new DedicatedVirtualAccount(this.client);
   }
 }
 
