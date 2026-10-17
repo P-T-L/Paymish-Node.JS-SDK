@@ -199,3 +199,119 @@ describe("DedicatedVirtualAccount Module - listAccounts()", () => {
     }
   });
 });
+
+describe("DedicatedVirtualAccount Module - getAccountByCustomerId()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve account details by direct customer ID (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Virtual account retrieved successfully",
+      data: { accountNumber: "1234567890", customerId: "tx_cust_123" },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.dedicatedVirtualAccount.getAccountByCustomerId("tx_cust_123", {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts/tx_cust_123",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    // Verify GET request does NOT send an auto-generated idempotency key
+    const [, config] = global.fetch.mock.calls[0];
+    expect(config.headers["Idempotency-Key"]).toBeUndefined();
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should support passing an object payload containing customerId", async () => {
+    const mockResponseBody = { status: "success", data: { accountNumber: "9876543210" } };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const result = await paymish.dedicatedVirtualAccount.getAccountByCustomerId({
+      customerId: "tx_cust_456",
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts/tx_cust_456",
+      expect.objectContaining({ method: "GET" })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if customerId is missing or empty", async () => {
+    await expect(paymish.dedicatedVirtualAccount.getAccountByCustomerId()).rejects.toThrow(
+      "Invalid parameter: 'customerId' is required to retrieve a dedicated virtual account."
+    );
+
+    await expect(paymish.dedicatedVirtualAccount.getAccountByCustomerId("")).rejects.toThrow(
+      "Invalid parameter: 'customerId' is required to retrieve a dedicated virtual account."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when account is not found (404 Not Found)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Virtual account not found.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.dedicatedVirtualAccount.getAccountByCustomerId("non_existent");
+      throw new Error("Expected getAccountByCustomerId to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(404);
+      expect(error.message).toBe("Virtual account not found.");
+    }
+  });
+});
