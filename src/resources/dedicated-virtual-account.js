@@ -80,6 +80,38 @@ class DedicatedVirtualAccount {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates a dedicated virtual account by customer ID
+   * PUT /api/transaction-service/external/v1/dedicated-virtual-accounts/{customerId}
+   *
+   * @param {string|number|Object} identifier - Customer ID or options object containing customerId/id
+   * @param {Object} payload - Payload containing updated account details
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateAccountByCustomerId(identifier, payload, options = {}) {
+    const customerId =
+      typeof identifier === "object" && identifier !== null
+        ? identifier.customerId || identifier.id
+        : identifier;
+
+    if (customerId == null || customerId === "") {
+      throw new Error(
+        "Invalid parameter: 'customerId' is required to update a dedicated virtual account."
+      );
+    }
+
+    if (!payload || typeof payload !== "object") {
+      throw new Error(
+        "Invalid payload: A valid payload object is required to update a dedicated virtual account."
+      );
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/dedicated-virtual-accounts/${encodeURIComponent(customerId)}`;
+
+    return this.client.request("PUT", endpoint, payload, options);
+  }
 }
 
 module.exports = DedicatedVirtualAccount;
