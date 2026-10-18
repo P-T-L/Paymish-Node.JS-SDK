@@ -559,3 +559,145 @@ describe("DedicatedVirtualAccount Module - requeryAccount()", () => {
     }
   });
 });
+
+describe("DedicatedVirtualAccount Module - assignAccount()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully assign a dedicated virtual account when all required fields are provided (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Dedicated virtual account assigned successfully",
+      data: {
+        accountNumber: "9988776655",
+        customerId: "tx_cust_123",
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      email: "jane.doe@example.com",
+      first_name: "Jane",
+      last_name: "Doe",
+      phone: "+2348012345678",
+      preferred_bank: "test-bank",
+    };
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.dedicatedVirtualAccount.assignAccount(payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/transaction-service/external/v1/dedicated-virtual-accounts/assign",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if payload is missing or not an object", async () => {
+    await expect(paymish.dedicatedVirtualAccount.assignAccount(null)).rejects.toThrow(
+      "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw early validation error if any required field is missing", async () => {
+    const validBase = {
+      email: "jane.doe@example.com",
+      first_name: "Jane",
+      last_name: "Doe",
+      phone: "+2348012345678",
+    };
+
+    // Missing email
+    await expect(
+      paymish.dedicatedVirtualAccount.assignAccount({ ...validBase, email: undefined })
+    ).rejects.toThrow(
+      "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+    );
+
+    // Missing first_name
+    await expect(
+      paymish.dedicatedVirtualAccount.assignAccount({ ...validBase, first_name: "" })
+    ).rejects.toThrow(
+      "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+    );
+
+    // Missing last_name
+    await expect(
+      paymish.dedicatedVirtualAccount.assignAccount({ ...validBase, last_name: null })
+    ).rejects.toThrow(
+      "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+    );
+
+    // Missing phone
+    await expect(
+      paymish.dedicatedVirtualAccount.assignAccount({ ...validBase, phone: undefined })
+    ).rejects.toThrow(
+      "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("should throw PaymishError when server returns 400 Bad Request", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Unable to assign account due to invalid parameter values.",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    const validPayload = {
+      email: "jane.doe@example.com",
+      first_name: "Jane",
+      last_name: "Doe",
+      phone: "+2348012345678",
+    };
+
+    try {
+      await paymish.dedicatedVirtualAccount.assignAccount(validPayload);
+      throw new Error("Expected assignAccount to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe("Unable to assign account due to invalid parameter values.");
+    }
+  });
+});
