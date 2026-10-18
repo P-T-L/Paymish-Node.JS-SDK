@@ -147,6 +147,29 @@ class DedicatedVirtualAccount {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Assigns a dedicated virtual account
+   * POST /api/transaction-service/external/v1/dedicated-virtual-accounts/assign
+   *
+   * @param {Object} payload - Payload containing account assignment details
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async assignAccount(payload, options = {}) {
+    if (!payload || !payload.first_name || !payload.last_name || !payload.email || !payload.phone) {
+      throw new Error(
+        "Invalid payload: 'email', 'first_name', 'last_name', and 'phone' are required fields."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/dedicated-virtual-accounts/assign",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = DedicatedVirtualAccount;
