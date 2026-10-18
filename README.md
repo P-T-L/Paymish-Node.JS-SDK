@@ -324,6 +324,84 @@ await paymish.transactionCustomer.updateCustomer(
 );
 ```
 
+### DedicatedVirtualAccount Resource (paymish.dedicatedVirtualAccount)
+
+`createAccount(payload, [options])`
+
+Creates a new dedicated virtual account.
+
+- `payload (Object, Required)` — Account creation details payload.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const account = await paymish.dedicatedVirtualAccount.createAccount(
+  { customerId: "tx_cust_123", preferredBank: "test-bank" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`listAccounts([params], [options])`
+
+Retrieves a paginated list of dedicated virtual accounts (defaults to `page: 1` and `limit: 10`).
+
+- `params (Object, Optional)` — Query parameters (e.g., `{ page: 1, limit: 10 }`).
+- `options (Object, Optional)` — Custom per-request options.
+
+`getAccountByCustomerId(identifier, [options])`
+
+Retrieves a dedicated virtual account by customer ID.
+
+- `identifier (string | number | Object, Required)` — Customer ID or options object containing customerId or id.
+- `options (Object, Optional)` — Custom per-request options.
+
+`updateAccountByCustomerId(identifier, payload, [options])`
+
+Updates a dedicated virtual account by customer ID.
+
+- `identifier (string | number | Object, Required)` — Customer ID or options object.
+- `payload (Object, Required)` — Updated account details.
+- `options (Object, Optional)` — Custom per-request options.
+
+`requeryAccount(params, [options])`
+
+Requeries the status of a dedicated virtual account.
+
+- `params (Object, Required)`
+  - `account_number (string, Required)` — Account number to requery.
+  - `provider_slug (string, Required)` — Provider slug.
+  - `date (string, Optional)` — Optional date filter.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const requeryResult = await paymish.dedicatedVirtualAccount.requeryAccount(
+  { account_number: "1234567890", provider_slug: "test-provider" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+`assignAccount(payload, [options])`
+
+Assigns a dedicated virtual account.
+
+- `payload (Object, Required)`
+  - `email (string, Required)` — Customer email.
+  - `first_name (string, Required)` — Customer first name.
+  - `last_name (string, Required)` — Customer last name.
+  - `phone (string, Required)` — Customer phone number.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const assigned = await paymish.dedicatedVirtualAccount.assignAccount(
+  {
+    email: "jane.doe@example.com",
+    first_name: "Jane",
+    last_name: "Doe",
+    phone: "+2348012345678",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
