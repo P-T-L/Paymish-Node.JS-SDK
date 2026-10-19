@@ -2,6 +2,9 @@
 
 The official Node.js SDK for integrating with the **Paymish API**. Built with **zero runtime dependencies** using native `fetch` and modern asynchronous JavaScript standards.
 
+Official Developer API docs: https://docs.paymish.com/
+Official Swagger API docs: https://api.paymish.com/api/user-service/external/v1/docs/
+
 ---
 
 ## Features
