@@ -124,6 +124,39 @@ const tokenResponse = await paymish.auth.generateToken(
 );
 ```
 
+#### Banks Resource (`paymish.banks`)
+
+#### `list([options])`
+
+Retrieves the list of banks supported by Paymish (includes codes required for transfers and account resolutions).
+
+- `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
+
+```javaScript
+const banks = await paymish.banks.list({
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `resolveAccount(params, [options])`
+
+Confirms that an account number exists at a bank and returns the account holder's name.
+
+- `params (Object, Required)`
+  - `account_number (string, Required)` — The 10-digit (NUBAN) account number.
+  - `bank_code (string, Required)` — The bank's code from `list()`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const resolved = await paymish.banks.resolveAccount(
+  {
+    account_number: "0123456789",
+    bank_code: "058",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ### Business Resource (`paymish.business`)
 
 `changeMode(payload, [options])`
