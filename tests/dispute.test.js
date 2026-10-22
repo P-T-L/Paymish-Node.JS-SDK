@@ -148,3 +148,63 @@ describe("Dispute Module - listDisputes()", () => {
     }
   });
 });
+
+describe("Dispute Module - getDisputeDetails()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully retrieve dispute details by transaction reference (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Record retrieved successfully",
+      data: {
+        transactionRef: "PM-TX-123",
+        status: "under_review",
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.dispute.getDisputeDetails("PM-TX-123", {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/dispute-service/external/v1/dispute-details?transactionRef=PM-TX-123",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer sk_test_secret_key",
+        }),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw early validation error if transactionRef is missing", async () => {
+    await expect(paymish.dispute.getDisputeDetails()).rejects.toThrow(
+      "Invalid parameter: 'transactionRef' is required to retrieve dispute details."
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
