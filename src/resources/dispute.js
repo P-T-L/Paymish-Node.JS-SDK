@@ -53,6 +53,34 @@ class Dispute {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of disputes.
+   * GET /api/dispute-service/external/v1/list
+   *
+   * @param {Object} [params] - Query parameters { limit, page, search }
+   * @param {number} [params.limit=10] - Maximum number of disputes to retrieve per page
+   * @param {number} [params.page=1] - The page number to retrieve
+   * @param {string} [params.search] - Search string to filter disputes by transaction reference or customer details
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the list of disputes
+   */
+  async listDisputes(params = {}, options = {}) {
+    const queryParams = new URLSearchParams();
+    queryParams.append("limit", params.limit ?? 10);
+    queryParams.append("page", params.page ?? 1);
+
+    if (params.search != null) {
+      queryParams.append("search", params.search);
+    }
+
+    return this.client.request(
+      "GET",
+      `/api/dispute-service/external/v1/list?${queryParams.toString()}`,
+      null,
+      options
+    );
+  }
 }
 
 module.exports = Dispute;
