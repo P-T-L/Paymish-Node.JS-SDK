@@ -5,6 +5,7 @@ const Banks = require("./src/resources/banks");
 const Business = require("./src/resources/business");
 const Customer = require("./src/resources/customer");
 const DedicatedVirtualAccount = require("./src/resources/dedicated-virtual-account");
+const Dispute = require("./src/resources/dispute");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 
 class Paymish {
@@ -17,6 +18,7 @@ class Paymish {
     this.transactionCustomer = new TransactionCustomer(this.client);
     this.dedicatedVirtualAccount = new DedicatedVirtualAccount(this.client);
     this.banks = new Banks(this.client);
+    this.dispute = new Dispute(this.client);
   }
 }
 

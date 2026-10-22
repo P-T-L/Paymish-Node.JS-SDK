@@ -80,9 +80,12 @@ class HttpClient {
     const idempotencyKey =
       explicitIdempotencyKey || (isStateChanging ? `sdk_auto_${randomUUID()}` : null);
 
-    // Prepare Base Headers (Ensuring the same key persists across all retries)
+    // Check if the body is a FormData instance (for multipart file uploads)
+    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
+    // Prepare Base Headers (omit Content-Type for FormData)
     const finalHeaders = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...requestHeaders,
     };
 
@@ -102,7 +105,7 @@ class HttpClient {
       };
 
       if (body) {
-        config.body = JSON.stringify(body);
+        config.body = isFormData ? body : JSON.stringify(body);
       }
 
       try {
