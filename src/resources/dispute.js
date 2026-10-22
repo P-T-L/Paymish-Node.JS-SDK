@@ -111,6 +111,32 @@ class Dispute {
       options
     );
   }
+
+  /**
+   * Updates an existing dispute record.
+   * PUT /api/dispute-service/external/v1/update-dispute
+   *
+   * @param {Object} payload - Update details payload
+   * @param {string} payload.tnxRef - The transaction reference
+   * @param {string} payload.reason - The reason for the update
+   * @param {string} payload.status - The new status of the dispute
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateDispute(payload, options = {}) {
+    if (!payload || !payload.tnxRef || !payload.reason || !payload.status) {
+      throw new Error(
+        "Invalid payload: 'tnxRef', 'reason', and 'status' are required to update a dispute."
+      );
+    }
+
+    return this.client.request(
+      "PUT",
+      "/api/dispute-service/external/v1/update-dispute",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Dispute;
