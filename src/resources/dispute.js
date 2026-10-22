@@ -81,6 +81,36 @@ class Dispute {
       options
     );
   }
+
+  /**
+   * Retrieves dispute details by transaction reference.
+   * GET /api/dispute-service/external/v1/dispute-details
+   *
+   * @param {string|Object} transactionRef - The transaction reference string or an object containing { transactionRef }
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing dispute details
+   */
+  async getDisputeDetails(transactionRef, options = {}) {
+    const ref =
+      typeof transactionRef === "object" && transactionRef !== null
+        ? transactionRef.transactionRef || transactionRef.reference
+        : transactionRef;
+
+    if (!ref || typeof ref !== "string") {
+      throw new Error(
+        "Invalid parameter: 'transactionRef' is required to retrieve dispute details."
+      );
+    }
+
+    const queryParams = new URLSearchParams({ transactionRef: ref }).toString();
+
+    return this.client.request(
+      "GET",
+      `/api/dispute-service/external/v1/dispute-details?${queryParams}`,
+      null,
+      options
+    );
+  }
 }
 
 module.exports = Dispute;
