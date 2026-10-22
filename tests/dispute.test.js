@@ -208,3 +208,133 @@ describe("Dispute Module - getDisputeDetails()", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("Dispute Module - updateDispute()", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("should successfully update a dispute with required fields (200 OK)", async () => {
+    const mockResponseBody = {
+      status: "success",
+      message: "Dispute updated successfully",
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+    });
+
+    const payload = {
+      tnxRef: "PM-TX-12345",
+      reason: "Merchant accepted liability",
+      status: "resolved",
+    };
+
+    const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+    const result = await paymish.dispute.updateDispute(payload, {
+      headers: authHeaders,
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.paymish.com/api/dispute-service/external/v1/update-dispute",
+      expect.objectContaining({
+        method: "PUT",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk_test_secret_key",
+          "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+        }),
+        body: JSON.stringify(payload),
+        signal: expect.any(AbortSignal),
+      })
+    );
+
+    expect(result).toEqual(mockResponseBody);
+  });
+
+  test("should throw PaymishError when payload fails API validation (400 Bad Request)", async () => {
+    const mockErrorBody = {
+      status: "error",
+      message: "Invalid status value provided.",
+      errors: {
+        status: ["'status' must be one of: pending, resolved, rejected."],
+      },
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      headers: {
+        get: (header) => (header === "content-type" ? "application/json" : null),
+      },
+      json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+    });
+
+    try {
+      await paymish.dispute.updateDispute({
+        tnxRef: "PM-TX-12345",
+        reason: "Merchant refund",
+        status: "invalid_status",
+      });
+      throw new Error("Expected updateDispute to throw PaymishError, but it succeeded.");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PaymishError);
+      expect(error.message).toBe("Invalid status value provided.");
+      expect(error.statusCode).toBe(400);
+      expect(error.errors).toHaveProperty("status");
+    }
+  });
+
+  test("should throw early validation error if any required field (tnxRef, reason, status) is missing", async () => {
+    // Missing status
+    await expect(
+      paymish.dispute.updateDispute({
+        tnxRef: "PM-TX-12345",
+        reason: "Merchant accepted liability",
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'tnxRef', 'reason', and 'status' are required to update a dispute."
+    );
+
+    // Missing reason
+    await expect(
+      paymish.dispute.updateDispute({
+        tnxRef: "PM-TX-12345",
+        status: "resolved",
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'tnxRef', 'reason', and 'status' are required to update a dispute."
+    );
+
+    // Missing tnxRef
+    await expect(
+      paymish.dispute.updateDispute({
+        reason: "Merchant accepted liability",
+        status: "resolved",
+      })
+    ).rejects.toThrow(
+      "Invalid payload: 'tnxRef', 'reason', and 'status' are required to update a dispute."
+    );
+
+    // Null or empty payload
+    await expect(paymish.dispute.updateDispute(null)).rejects.toThrow(
+      "Invalid payload: 'tnxRef', 'reason', and 'status' are required to update a dispute."
+    );
+
+    // Ensure client validation prevented network calls
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
