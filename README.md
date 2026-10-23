@@ -438,6 +438,82 @@ const assigned = await paymish.dedicatedVirtualAccount.assignAccount(
 );
 ```
 
+### Dispute Resource (paymish.dispute)
+
+#### `createDispute(payload, [options])`
+
+Creates a dispute by uploading a document (evidence image) and providing transaction details using multipart form-data.
+
+- `payload (Object \| FormData, Required)`
+  - `transactionRef (string, Required)` — The reference of the transaction for which the dispute is being raised.
+  - `disputeReason (string, Required)` — The reason for raising the dispute.
+  - `disputeDescription (string, Required)` — Detailed description of the dispute.
+  - `image (any, Required)` — The file or stream to be uploaded (dispute evidence image).
+- `options (Object, Optional)` — Custom per-request configuration options.
+
+```javaScript
+const dispute = await paymish.dispute.createDispute(
+  {
+    transactionRef: "PM-TX-12345",
+    disputeReason: "Unauthorized charge",
+    disputeDescription: "Customer did not authorize this transaction.",
+    image: fs.createReadStream("evidence.png"),
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `listDisputes([params], [options])`
+
+Retrieves a paginated list of disputes.
+
+- `params (Object, Optional)`
+  - `limit (number, Optional)` — Maximum number of disputes per page (default: `10`).
+  - `page (number, Optional)` — The page number to retrieve (default: `1`).
+  - `search (string, Optional)` — Search string to filter disputes by transaction reference or customer details.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const disputes = await paymish.dispute.listDisputes(
+  { limit: 10, page: 1, search: "PM-TX-12345" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getDisputeDetails(transactionRef, [options])`
+
+Retrieves dispute details by transaction reference.
+
+- `transactionRef (string \| Object, Required)` — The transaction reference string or an object containing `{ transactionRef }`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const details = await paymish.dispute.getDisputeDetails("PM-TX-12345", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+### `updateDispute(payload, [options])`
+
+Updates an existing dispute record.
+
+- `payload (Object, Required)`
+  - `tnxRef (string, Required)` — The transaction reference.
+  - `reason (string, Required)` — The reason for the update.
+  - `status (string, Required)` — The new status of the dispute (e.g., `resolved`, `pending`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const updated = await paymish.dispute.updateDispute(
+  {
+  tnxRef: "PM-TX-12345",
+  reason: "Merchant accepted liability",
+  status: "resolved",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
