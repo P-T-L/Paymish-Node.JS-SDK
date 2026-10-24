@@ -125,4 +125,53 @@ describe("TransactionDisputes Module", () => {
       expect(result).toEqual(mockResponseBody);
     });
   });
+
+  describe("getDisputeById()", () => {
+    test("should successfully retrieve a transaction dispute by ID (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Record retrieved successfully",
+        data: {
+          id: "disp_123",
+          status: "pending",
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.transactionDisputes.getDisputeById("disp_123", {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/disputes/disp_123",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if disputeId is missing", async () => {
+      await expect(paymish.transactionDisputes.getDisputeById()).rejects.toThrow(
+        "Invalid parameter: 'disputeId' is required to retrieve dispute details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
 });
