@@ -38,6 +38,32 @@ class TransactionDisputes {
       options
     );
   }
+
+  /**
+   * Retrieves a transaction-level dispute by its ID.
+   * GET /api/transaction-service/external/v1/disputes/{id}
+   *
+   * @param {string|number|Object} disputeId - The dispute ID string/number or object containing id or disputeId
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing dispute details
+   */
+  async getDisputeById(disputeId, options = {}) {
+    const id =
+      typeof disputeId === "object" && disputeId !== null
+        ? disputeId.disputeId || disputeId.id
+        : disputeId;
+
+    if (!id && id !== 0) {
+      throw new Error("Invalid parameter: 'disputeId' is required to retrieve dispute details.");
+    }
+
+    return this.client.request(
+      "GET",
+      `/api/transaction-service/external/v1/disputes/${id}`,
+      null,
+      options
+    );
+  }
 }
 
 module.exports = TransactionDisputes;
