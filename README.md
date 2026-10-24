@@ -514,6 +514,63 @@ const updated = await paymish.dispute.updateDispute(
 );
 ```
 
+### TransactionDisputes Resource (`paymish.transactionDisputes`)
+
+#### `listDisputes([options])`
+
+Retrieves the list of transaction-level disputes.
+
+- `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
+
+```javaScript
+const disputes = await paymish.transactionDisputes.listDisputes({
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `createDispute([payload], [options])`
+
+Creates a new transaction-level dispute.
+
+- `payload (Object, Optional)` — Dispute creation details payload.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const newDispute = await paymish.transactionDisputes.createDispute(
+  { transactionId: "tx_123", reason: "fraud" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getDisputeById(disputeId, [options])`
+
+Retrieves a transaction-level dispute by its ID.
+
+- `disputeId (string \| number \| Object, Required)` — The dispute ID string/number or options object.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const dispute = await paymish.transactionDisputes.getDisputeById("disp_123", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updateDispute(disputeId, payload, [options])`
+
+Updates an existing transaction-level dispute by its ID.
+
+- `disputeId (string \| number \| Object, Required)` — The dispute ID string/number or options object.
+- `payload (Object, Required)` — Update payload containing updated dispute details.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const updatedDispute = await paymish.transactionDisputes.updateDispute(
+  "disp_123",
+  { status: "resolved", resolutionNote: "Refund issued" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
