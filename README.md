@@ -102,7 +102,7 @@ const paymish = new Paymish({
 
 ### Auth Resource (`paymish.auth`)
 
-`generateToken(credentials, [options])`
+#### `generateToken(credentials, [options])`
 
 Generates an authentication JWT token using public and secret application keys.
 
@@ -159,7 +159,7 @@ const resolved = await paymish.banks.resolveAccount(
 
 ### Business Resource (`paymish.business`)
 
-`changeMode(payload, [options])`
+#### `changeMode(payload, [options])`
 
 Toggles or changes the environment mode of the business between Live and "not Live" environments.
 
@@ -179,7 +179,7 @@ const response = await paymish.business.changeMode(true, {
 });
 ```
 
-`getDetails([options])`
+#### `getDetails([options])`
 
 Retrieves full details for the authenticated business profile.
 
@@ -191,7 +191,7 @@ const businessProfile = await paymish.business.getDetails({
 });
 ```
 
-`createBusiness(payload, [options])`
+#### `createBusiness(payload, [options])`
 
 Adds a new business profile under the account.
 
@@ -214,7 +214,7 @@ const newBusiness = await paymish.business.createBusiness(
 );
 ```
 
-`listBusinesses([options])`
+#### `listBusinesses([options])`
 
 Retrieves the list of businesses associated with the account.
 
@@ -228,7 +228,7 @@ const businesses = await paymish.business.listBusinesses({
 
 ### Customer Resource (paymish.customer)
 
-`createCustomer(payload, [options])`
+#### `createCustomer(payload, [options])`
 
 Creates a new customer record.
 
@@ -253,7 +253,7 @@ const customer = await paymish.customer.createCustomer(
 );
 ```
 
-`updateCustomer(payload, [options])`
+#### `updateCustomer(payload, [options])`
 
 Updates an existing customer record.
 
@@ -262,7 +262,7 @@ Updates an existing customer record.
   - Other updatable profile properties.
 - `options (Object, Optional)` — Custom per-request options.
 
-`listCustomers([params], [options])`
+#### `listCustomers([params], [options])`
 
 Retrieves a paginated list of customers. Automatically defaults to `page: 1` and `limit: 10` if omitted.
 
@@ -276,7 +276,7 @@ const customers = await paymish.customer.listCustomers(
 );
 ```
 
-`blacklistCustomer(payload, [options])`
+#### `blacklistCustomer(payload, [options])`
 
 Blacklists or whitelists a customer profile.
 
@@ -295,7 +295,7 @@ await paymish.customer.blacklistCustomer(
 );
 ```
 
-`getCustomerById(customerId, [options])`
+#### `getCustomerById(customerId, [options])`
 
 Retrieves customer details by integer ID.
 
@@ -310,7 +310,7 @@ const customerDetails = await paymish.customer.getCustomerById(101, {
 
 ### TransactionCustomer Resource (paymish.transactionCustomer)
 
-`listCustomers([params], [options])`
+#### `listCustomers([params], [options])`
 
 Retrieves a paginated list of transaction-service customers.
 
@@ -324,14 +324,14 @@ const txCustomers = await paymish.transactionCustomer.listCustomers(
 );
 ```
 
-`createCustomer(payload, [options])`
+#### `createCustomer(payload, [options])`
 
 Creates a new customer in the transaction service.
 
 - `payload (Object, Required)` — Customer details payload.
 - `options (Object, Optional)` — Custom per-request options.
 
-`getCustomerById(identifier, [options])`
+#### `getCustomerById(identifier, [options])`
 
 Retrieves transaction customer details by ID (supports string or numeric IDs).
 
@@ -344,7 +344,7 @@ const txCustomer = await paymish.transactionCustomer.getCustomerById("tx_cust_12
 });
 ```
 
-`updateCustomer(identifier, payload, [options])`
+#### `updateCustomer(identifier, payload, [options])`
 
 Updates an existing transaction customer by ID.
 
@@ -362,7 +362,7 @@ await paymish.transactionCustomer.updateCustomer(
 
 ### DedicatedVirtualAccount Resource (paymish.dedicatedVirtualAccount)
 
-`createAccount(payload, [options])`
+#### `createAccount(payload, [options])`
 
 Creates a new dedicated virtual account.
 
@@ -376,21 +376,21 @@ const account = await paymish.dedicatedVirtualAccount.createAccount(
 );
 ```
 
-`listAccounts([params], [options])`
+#### `listAccounts([params], [options])`
 
 Retrieves a paginated list of dedicated virtual accounts (defaults to `page: 1` and `limit: 10`).
 
 - `params (Object, Optional)` — Query parameters (e.g., `{ page: 1, limit: 10 }`).
 - `options (Object, Optional)` — Custom per-request options.
 
-`getAccountByCustomerId(identifier, [options])`
+#### `getAccountByCustomerId(identifier, [options])`
 
 Retrieves a dedicated virtual account by customer ID.
 
 - `identifier (string | number | Object, Required)` — Customer ID or options object containing customerId or id.
 - `options (Object, Optional)` — Custom per-request options.
 
-`updateAccountByCustomerId(identifier, payload, [options])`
+#### `updateAccountByCustomerId(identifier, payload, [options])`
 
 Updates a dedicated virtual account by customer ID.
 
@@ -398,7 +398,7 @@ Updates a dedicated virtual account by customer ID.
 - `payload (Object, Required)` — Updated account details.
 - `options (Object, Optional)` — Custom per-request options.
 
-`requeryAccount(params, [options])`
+#### `requeryAccount(params, [options])`
 
 Requeries the status of a dedicated virtual account.
 
@@ -415,7 +415,7 @@ const requeryResult = await paymish.dedicatedVirtualAccount.requeryAccount(
 );
 ```
 
-`assignAccount(payload, [options])`
+#### `assignAccount(payload, [options])`
 
 Assigns a dedicated virtual account.
 
@@ -493,7 +493,7 @@ const details = await paymish.dispute.getDisputeDetails("PM-TX-12345", {
 });
 ```
 
-### `updateDispute(payload, [options])`
+#### `updateDispute(payload, [options])`
 
 Updates an existing dispute record.
 
