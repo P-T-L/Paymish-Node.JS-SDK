@@ -174,4 +174,57 @@ describe("TransactionDisputes Module", () => {
       expect(global.fetch).not.toHaveBeenCalled();
     });
   });
+
+  describe("updateDispute()", () => {
+    test("should successfully update a transaction dispute by ID (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Dispute updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = { status: "resolved", resolutionNote: "Refund issued" };
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.transactionDisputes.updateDispute("disp_123", payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/disputes/disp_123",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            Authorization: "Bearer sk_test_secret_key",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if disputeId or payload is missing", async () => {
+      await expect(
+        paymish.transactionDisputes.updateDispute(null, { status: "resolved" })
+      ).rejects.toThrow("Invalid parameter: 'disputeId' is required to update a dispute.");
+
+      await expect(paymish.transactionDisputes.updateDispute("disp_123", null)).rejects.toThrow(
+        "Invalid payload: A valid payload object is required to update a dispute."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
 });
