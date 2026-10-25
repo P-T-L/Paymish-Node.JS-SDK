@@ -571,6 +571,41 @@ const updatedDispute = await paymish.transactionDisputes.updateDispute(
 );
 ```
 
+### InitializeCheckout Resource (`paymish.initializeCheckout`)
+
+#### `initializeTransaction(payload, [options])`
+
+Initializes a standard checkout transaction from your backend.
+
+- `payload (Object, Required)`
+  - `email (string, Required)` — Customer's email address.
+  - `amount (string \| number, Required)` — Amount in currency subunits (e.g. kobo/cents).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const response = await paymish.initializeCheckout.initializeTransaction(
+  { email: "customer@email.com", amount: 10000 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `initializeDva(payload, [options])`
+
+Initializes a transaction and gets back a one-time Dynamic Virtual Account (bank transfer) synchronously.
+
+- `payload (Object, Required)`
+  - `email (string, Required)` — Customer's email address.
+  - `amount (string \| number, Required)` — Amount in currency subunits.
+  - `reference (string, Optional)` — Optional unique reference for this transaction (auto-generated if omitted).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const dvaResponse = await paymish.initializeCheckout.initializeDva(
+  { email: "customer@email.com", amount: 10000, reference: "my_ref_123" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
