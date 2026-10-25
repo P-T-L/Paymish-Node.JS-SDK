@@ -6,6 +6,7 @@ const Business = require("./src/resources/business");
 const Customer = require("./src/resources/customer");
 const DedicatedVirtualAccount = require("./src/resources/dedicated-virtual-account");
 const Dispute = require("./src/resources/dispute");
+const InitializeCheckout = require("./src/resources/initialize-checkout");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 const TransactionDisputes = require("./src/resources/transaction-disputes");
 
@@ -21,6 +22,7 @@ class Paymish {
     this.banks = new Banks(this.client);
     this.dispute = new Dispute(this.client);
     this.transactionDisputes = new TransactionDisputes(this.client);
+    this.initializeCheckout = new InitializeCheckout(this.client);
   }
 }
 

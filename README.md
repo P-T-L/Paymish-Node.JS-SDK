@@ -124,7 +124,7 @@ const tokenResponse = await paymish.auth.generateToken(
 );
 ```
 
-#### Banks Resource (`paymish.banks`)
+### Banks Resource (`paymish.banks`)
 
 #### `list([options])`
 
