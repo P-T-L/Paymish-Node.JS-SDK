@@ -37,6 +37,47 @@ class Invoices {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of invoices with optional filters.
+   * GET /api/payment-service/external/v1/invoices
+   *
+   * @param {Object} [params] - Optional query parameters
+   * @param {string} [params.status] - Filter by invoice status
+   * @param {string} [params.startDate] - Filter by start date
+   * @param {string} [params.endDate] - Filter by end date
+   * @param {string} [params.search] - Search by invoice ID or customer name/email
+   * @param {number} [params.page] - Page number
+   * @param {number} [params.limit] - Number of items per page
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the list of invoices
+   */
+  async listInvoices(params = {}, options = {}) {
+    const queryParams = new URLSearchParams();
+
+    if (params.status !== undefined && params.status !== null) {
+      queryParams.append("status", params.status);
+    }
+    if (params.startDate !== undefined && params.startDate !== null) {
+      queryParams.append("startDate", params.startDate);
+    }
+    if (params.endDate !== undefined && params.endDate !== null) {
+      queryParams.append("endDate", params.endDate);
+    }
+    if (params.search !== undefined && params.search !== null) {
+      queryParams.append("search", params.search);
+    }
+    if (params.limit !== undefined && params.limit !== null) {
+      queryParams.append("limit", params.limit);
+    }
+
+    const queryString = queryParams.toString();
+    const endpoint = queryString
+      ? `/api/payment-service/external/v1/invoices?${queryString}`
+      : "/api/payment-service/external/v1/invoices";
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Invoices;
