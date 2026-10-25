@@ -606,6 +606,59 @@ const dvaResponse = await paymish.initializeCheckout.initializeDva(
 );
 ```
 
+### Invoices Resource (`paymish.invoices`)
+
+#### `createInvoice(payload, [options])`
+
+Creates a new invoice.
+
+- `payload (Object, Required)`
+  - `customerEmail (string, Required)` — Customer's email address.
+  - `amount (number, Required)` — Invoice amount.
+  - `note (string, Optional)` — Optional invoice note.
+  - `sendImmediately (boolean, Optional)` — Defaults to true. When false, the invoice is created as a Draft.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const invoice = await paymish.invoices.createInvoice(
+  { customerEmail: "customer@email.com", amount: 5000 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `listInvoices([params], [options])`
+
+Retrieves a paginated list of invoices with optional query filters.
+
+- `params (Object, Optional)`
+  - `status (string, Optional)` — Filter by invoice status.
+  - `startDate (string, Optional)` — Filter by start date (`YYYY-MM-DD`).
+  - `endDate (string, Optional)` — Filter by end date (`YYYY-MM-DD`).
+  - `search (string, Optional)` — Search by invoice ID or customer name/email.
+  - `page (number, Optional)` — Page number.
+  - `limit (number, Optional)` — Number of items per page.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const invoices = await paymish.invoices.listInvoices(
+  { status: "paid", page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### getInvoiceById(invoiceId, [options])
+
+Retrieves a single invoice by its ID.
+
+- `invoiceId (string \| number \| Object, Required)` — The invoice ID string/number or options object.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javaScript
+const invoice = await paymish.invoices.getInvoiceById("PM-REF-12345", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
 ---
 
 ## Error Handling
