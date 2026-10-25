@@ -67,6 +67,9 @@ class Invoices {
     if (params.search !== undefined && params.search !== null) {
       queryParams.append("search", params.search);
     }
+    if (params.page !== undefined && params.page !== null) {
+      queryParams.append("page", params.page);
+    }
     if (params.limit !== undefined && params.limit !== null) {
       queryParams.append("limit", params.limit);
     }

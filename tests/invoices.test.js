@@ -112,4 +112,76 @@ describe("Invoices Module", () => {
       }
     });
   });
+
+  describe("listInvoices()", () => {
+    test("should successfully retrieve a list of invoices with query filters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Invoices retrieved successfully",
+        data: [{ reference: "PM-INV-001", amount: 5000 }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const filters = {
+        status: "paid",
+        startDate: "2026-01-01",
+        endDate: "2026-10-31",
+        search: "customer@email.com",
+        page: 1,
+        limit: 10,
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.invoices.listInvoices(filters, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/invoices?status=paid&startDate=2026-01-01&endDate=2026-10-31&search=customer%40email.com&page=1&limit=10",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when unauthorized or request fails (401 Unauthorized)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Unauthorized access.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.invoices.listInvoices();
+        throw new Error("Expected listInvoices to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(401);
+        expect(error.message).toBe("Unauthorized access.");
+      }
+    });
+  });
 });
