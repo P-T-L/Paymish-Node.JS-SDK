@@ -81,6 +81,32 @@ class Invoices {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves a single invoice by its ID.
+   * GET /api/payment-service/external/v1/invoices/{id}
+   *
+   * @param {string|number|Object} invoiceId - The invoice ID string/number or options object containing id or invoiceId
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing invoice details
+   */
+  async getInvoiceById(invoiceId, options = {}) {
+    const id =
+      typeof invoiceId === "object" && invoiceId !== null
+        ? invoiceId.invoiceId || invoiceId.id
+        : invoiceId;
+
+    if (!id && id !== 0) {
+      throw new Error("Invalid parameter: 'invoiceId' is required to retrieve invoice details.");
+    }
+
+    return this.client.request(
+      "GET",
+      `/api/payment-service/external/v1/invoices/${id}`,
+      null,
+      options
+    );
+  }
 }
 
 module.exports = Invoices;
