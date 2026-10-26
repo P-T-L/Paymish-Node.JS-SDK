@@ -840,4 +840,138 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("initiateCheckoutDynamicVirtualAccount()", () => {
+    test("should successfully initiate a dynamic virtual account for checkout (200 OK)", async () => {
+      const mockResponseBody = {
+        data: {
+          accountNumber: "1234567890",
+          bankName: "Paymish Bank",
+          expiresAt: "2026-10-26T16:00:00Z",
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        accessCode: "chk_9f8a7b6c5d4e",
+        amount: 5000,
+        email: "customer@example.com",
+        pageReference: "ref_123",
+        transferSelectedAt: 1698336000000,
+      };
+
+      const result = await paymish.paymentPages.initiateCheckoutDynamicVirtualAccount(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/initiate-initialize-checkout-dynamic-virtual-account",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support snake_case aliases for access_code and page_reference", async () => {
+      const mockResponseBody = { data: "success" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        access_code: "chk_9f8a7b6c5d4e",
+        amount: 5000,
+        page_reference: "ref_123",
+      };
+
+      await paymish.paymentPages.initiateCheckoutDynamicVirtualAccount(payload);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/initiate-initialize-checkout-dynamic-virtual-account",
+        expect.objectContaining({
+          body: JSON.stringify({
+            accessCode: "chk_9f8a7b6c5d4e",
+            amount: 5000,
+            pageReference: "ref_123",
+          }),
+        })
+      );
+    });
+
+    test("should throw early validation error if accessCode or amount is missing/invalid", async () => {
+      await expect(
+        paymish.paymentPages.initiateCheckoutDynamicVirtualAccount({ amount: 5000 })
+      ).rejects.toThrow(
+        "Invalid payload: 'accessCode' and numeric 'amount' are required to initiate a dynamic virtual account."
+      );
+
+      await expect(
+        paymish.paymentPages.initiateCheckoutDynamicVirtualAccount({ accessCode: "chk_123" })
+      ).rejects.toThrow(
+        "Invalid payload: 'accessCode' and numeric 'amount' are required to initiate a dynamic virtual account."
+      );
+
+      await expect(
+        paymish.paymentPages.initiateCheckoutDynamicVirtualAccount({
+          accessCode: "chk_123",
+          amount: "5000",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'accessCode' and numeric 'amount' are required to initiate a dynamic virtual account."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when allocation fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid request payload. Check `accessCode` and try again.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.initiateCheckoutDynamicVirtualAccount({
+          accessCode: "invalid_code",
+          amount: 5000,
+        });
+        throw new Error(
+          "Expected initiateCheckoutDynamicVirtualAccount to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid request payload. Check `accessCode` and try again.");
+      }
+    });
+  });
 });
