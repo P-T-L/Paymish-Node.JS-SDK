@@ -218,6 +218,38 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Deletes (or marks as deleted) a payment page.
+   * POST /api/payment-service/external/v1/payment-pages/delete-page
+   *
+   * @param {Object} payload - Payload containing pageId and isDeleted
+   * @param {number|string} payload.pageId - The ID of the payment page
+   * @param {boolean} payload.isDeleted - Boolean flag indicating deletion state
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deletePage(payload, options = {}) {
+    if (
+      !payload ||
+      payload.pageId === undefined ||
+      payload.pageId === null ||
+      payload.pageId === "" ||
+      payload.isDeleted === undefined ||
+      payload.isDeleted === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'pageId' and 'isDeleted' are required to delete a payment page."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/payment-pages/delete-page",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
