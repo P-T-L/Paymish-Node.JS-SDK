@@ -187,6 +187,37 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Updates the status of a specific payment page.
+   * PUT /api/payment-service/external/v1/payment-pages/update-page-status
+   *
+   * @param {Object} payload - Payload containing pageId and status
+   * @param {number|string} payload.pageId - The ID of the payment page to update
+   * @param {string} payload.status - The new status of the payment page (e.g. Published, Unpublished)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updatePageStatus(payload, options = {}) {
+    if (
+      !payload ||
+      payload.pageId === undefined ||
+      payload.pageId === null ||
+      payload.pageId === "" ||
+      !payload.status
+    ) {
+      throw new Error(
+        "Invalid payload: 'pageId' and 'status' are required to update payment page status."
+      );
+    }
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/payment-pages/update-page-status",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
