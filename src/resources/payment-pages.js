@@ -364,6 +364,55 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Initiates a dynamic virtual account for a payment page checkout session.
+   * POST /api/payment-service/external/v1/payment-pages/initiate-initialize-checkout-dynamic-virtual-account
+   *
+   * @param {Object} payload - Payload containing accessCode and amount
+   * @param {string} payload.accessCode - Checkout session access code (accepts access_code alias)
+   * @param {number} payload.amount - Amount to be paid in Naira
+   * @param {string} [payload.email] - Optional customer email
+   * @param {string} [payload.pageReference] - Optional page reference (accepts page_reference alias)
+   * @param {number} [payload.transferSelectedAt] - Epoch timestamp in ms when transfer was selected
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async initiateCheckoutDynamicVirtualAccount(payload, options = {}) {
+    const accessCode = payload && (payload.accessCode || payload.access_code);
+    const amount = payload && payload.amount;
+
+    if (
+      !payload ||
+      !accessCode ||
+      amount === undefined ||
+      amount === null ||
+      typeof amount !== "number"
+    ) {
+      throw new Error(
+        "Invalid payload: 'accessCode' and numeric 'amount' are required to initiate a dynamic virtual account."
+      );
+    }
+
+    const requestPayload = {
+      accessCode,
+      amount,
+      ...(payload.email && { email: payload.email }),
+      ...((payload.pageReference || payload.page_reference) && {
+        pageReference: payload.pageReference || payload.page_reference,
+      }),
+      ...(payload.transferSelectedAt !== undefined && {
+        transferSelectedAt: payload.transferSelectedAt,
+      }),
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/payment-pages/initiate-initialize-checkout-dynamic-virtual-account",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
