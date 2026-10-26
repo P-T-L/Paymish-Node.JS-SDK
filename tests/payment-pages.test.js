@@ -974,4 +974,70 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("listPaymentPages()", () => {
+    test("should successfully retrieve payment pages from transaction service (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Record retrieved successfully",
+        data: [
+          { id: 1, title: "Test Page 1" },
+          { id: 2, title: "Test Page 2" },
+        ],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.listPaymentPages({
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/payment-pages",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Requested record was not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.listPaymentPages();
+        throw new Error("Expected listPaymentPages to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Requested record was not found.");
+      }
+    });
+  });
 });

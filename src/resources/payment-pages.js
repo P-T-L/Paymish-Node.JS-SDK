@@ -429,6 +429,23 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Creates a payment page via the transaction service.
+   * POST /api/transaction-service/external/v1/payment-pages
+   *
+   * @param {Object} [payload] - Optional payload data for creating the payment page
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async createPaymentPageTransactionService(payload = {}, options = {}) {
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/payment-pages",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
