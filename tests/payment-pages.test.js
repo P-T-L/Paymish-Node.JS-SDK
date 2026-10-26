@@ -259,4 +259,85 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("getPageDetails()", () => {
+    test("should successfully retrieve payment page details (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Record retrieved successfully",
+        data: {
+          reference: "PM-REF-12345",
+          status: "success",
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.getPageDetails(123, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/get-page-details?pageId=123",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if pageId is missing", async () => {
+      await expect(paymish.paymentPages.getPageDetails()).rejects.toThrow(
+        "Invalid parameter: 'pageId' is required to retrieve payment page details."
+      );
+
+      await expect(paymish.paymentPages.getPageDetails({})).rejects.toThrow(
+        "Invalid parameter: 'pageId' is required to retrieve payment page details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when record is not found (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Requested record was not found.",
+        errors: {
+          reference: ["Check the identifier and merchant context before retrying."],
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.getPageDetails(99999);
+        throw new Error("Expected getPageDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Requested record was not found.");
+      }
+    });
+  });
 });
