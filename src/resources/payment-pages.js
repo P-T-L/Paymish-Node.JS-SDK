@@ -74,6 +74,54 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of payment pages with optional filters.
+   * GET /api/payment-service/external/v1/payment-pages/get-pages
+   *
+   * @param {Object} [params] - Optional query parameters
+   * @param {string} [params.status] - Status of the pages (Published/Unpublished)
+   * @param {string} [params.searchPageText] - Text to search within page content or title
+   * @param {string} [params.startDate] - Filter pages created after this start date
+   * @param {string} [params.endDate] - Filter pages created before this end date
+   * @param {number} [params.page] - Page number for pagination
+   * @param {number} [params.limit] - Number of records per page
+   * @param {string} [params.sort] - Sorting criteria on created date (e.g. "DESC", "ASC")
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the list of payment pages
+   */
+  async getPaymentPages(params = {}, options = {}) {
+    const queryParams = new URLSearchParams();
+
+    if (params.status !== undefined && params.status !== null) {
+      queryParams.append("status", params.status);
+    }
+    if (params.searchPageText !== undefined && params.searchPageText !== null) {
+      queryParams.append("searchPageText", params.searchPageText);
+    }
+    if (params.startDate !== undefined && params.startDate !== null) {
+      queryParams.append("startDate", params.startDate);
+    }
+    if (params.endDate !== undefined && params.endDate !== null) {
+      queryParams.append("endDate", params.endDate);
+    }
+    if (params.page !== undefined && params.page !== null) {
+      queryParams.append("page", params.page);
+    }
+    if (params.limit !== undefined && params.limit !== null) {
+      queryParams.append("limit", params.limit);
+    }
+    if (params.sort !== undefined && params.sort !== null) {
+      queryParams.append("sort", params.sort);
+    }
+
+    const queryString = queryParams.toString();
+    const endpoint = queryString
+      ? `/api/payment-service/external/v1/payment-pages/get-pages?${queryString}`
+      : "/api/payment-service/external/v1/payment-pages/get-pages";
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = PaymentPages;
