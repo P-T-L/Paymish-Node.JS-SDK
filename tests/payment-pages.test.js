@@ -340,4 +340,83 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("updatePaymentPage()", () => {
+    test("should successfully update payment page details as FormData (200 OK)", async () => {
+      const mockResponseBody = {
+        message: "Page detail update successfully.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        pageId: 447,
+        pageName: "Updated Payment Page",
+        pageDescription: "This is an updated description of the payment page.",
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.updatePaymentPage(payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/update-page-details",
+        expect.objectContaining({
+          method: "PUT",
+          body: expect.any(FormData),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if pageId is missing", async () => {
+      await expect(
+        paymish.paymentPages.updatePaymentPage({ pageName: "Updated Page" })
+      ).rejects.toThrow("Invalid payload: 'pageId' is required to update payment page details.");
+
+      await expect(paymish.paymentPages.updatePaymentPage(null)).rejects.toThrow(
+        "Invalid payload: 'pageId' is required to update payment page details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when page detail is not found (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        message: "Page detail not found!",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.updatePaymentPage({
+          pageId: 99999,
+          pageName: "Test",
+        });
+        throw new Error("Expected updatePaymentPage to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Page detail not found!");
+      }
+    });
+  });
 });
