@@ -186,4 +186,77 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("getPaymentPages()", () => {
+    test("should successfully retrieve payment pages with query filters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Record retrieved successfully",
+        data: [{ pageName: "My Payment Page", status: "Published" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const filters = {
+        status: "Published",
+        searchPageText: "Subscription",
+        startDate: "2026-01-01",
+        endDate: "2026-10-31",
+        page: 1,
+        limit: 10,
+        sort: "DESC",
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.getPaymentPages(filters, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/get-pages?status=Published&searchPageText=Subscription&startDate=2026-01-01&endDate=2026-10-31&page=1&limit=10&sort=DESC",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when unauthorized or request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Requested record was not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.getPaymentPages();
+        throw new Error("Expected getPaymentPages to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Requested record was not found.");
+      }
+    });
+  });
 });
