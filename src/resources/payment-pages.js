@@ -250,6 +250,44 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Retrieves products associated with a payment page.
+   * GET /api/payment-service/external/v1/payment-pages/payment-page-get-product
+   *
+   * @param {Object|string|number} params - Query parameters object containing pageId or direct pageId value
+   * @param {number|string} params.pageId - The ID of the payment page (Required)
+   * @param {string} [params.searchProduct] - Optional search query for products
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing associated products
+   */
+  async getAssociatedProducts(params, options = {}) {
+    const pageId =
+      typeof params === "object" && params !== null
+        ? params.pageId !== undefined
+          ? params.pageId
+          : params.id
+        : params;
+
+    if (pageId === undefined || pageId === null || pageId === "") {
+      throw new Error(
+        "Invalid parameter: 'pageId' is required to retrieve products associated with a payment page."
+      );
+    }
+
+    const searchProduct =
+      typeof params === "object" && params !== null ? params.searchProduct : undefined;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("pageId", pageId);
+    if (searchProduct !== undefined && searchProduct !== null && searchProduct !== "") {
+      queryParams.append("searchProduct", searchProduct);
+    }
+
+    const endpoint = `/api/payment-service/external/v1/payment-pages/payment-page-get-product?${queryParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = PaymentPages;
