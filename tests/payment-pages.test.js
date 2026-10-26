@@ -93,4 +93,97 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("createPaymentPage()", () => {
+    test("should successfully create a new payment page as FormData (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Request processed successfully",
+        data: {
+          reference: "PM-REF-12345",
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        businessId: 123,
+        planId: 456,
+        pageType: "Subscription",
+        pageName: "My Payment Page",
+        pageDescription: "This is a sample payment page.",
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.createPaymentPage(payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/create-pages",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.any(FormData),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if businessId or pageName is missing", async () => {
+      await expect(paymish.paymentPages.createPaymentPage({ pageName: "My Page" })).rejects.toThrow(
+        "Invalid payload: 'businessId' and 'pageName' are required to create a payment page."
+      );
+
+      await expect(paymish.paymentPages.createPaymentPage({ businessId: 123 })).rejects.toThrow(
+        "Invalid payload: 'businessId' and 'pageName' are required to create a payment page."
+      );
+
+      await expect(paymish.paymentPages.createPaymentPage(null)).rejects.toThrow(
+        "Invalid payload: 'businessId' and 'pageName' are required to create a payment page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when payload fails API validation (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid request payload. Check businessId and try again.",
+        errors: {
+          businessId: ["businessId is required."],
+        },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.createPaymentPage({
+          businessId: 0,
+          pageName: "Test Page",
+        });
+        throw new Error("Expected createPaymentPage to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid request payload. Check businessId and try again.");
+      }
+    });
+  });
 });
