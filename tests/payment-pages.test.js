@@ -593,4 +593,79 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("getAssociatedProducts()", () => {
+    test("should successfully retrieve products associated with a payment page (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Products retrieved successfully",
+        data: [{ id: 1, name: "Sample Product" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.getAssociatedProducts(
+        { pageId: 447, searchProduct: "Sample" },
+        { headers: authHeaders }
+      );
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/payment-page-get-product?pageId=447&searchProduct=Sample",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            Authorization: "Bearer sk_test_secret_key",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if pageId is missing", async () => {
+      await expect(paymish.paymentPages.getAssociatedProducts()).rejects.toThrow(
+        "Invalid parameter: 'pageId' is required to retrieve products associated with a payment page."
+      );
+
+      await expect(paymish.paymentPages.getAssociatedProducts({})).rejects.toThrow(
+        "Invalid parameter: 'pageId' is required to retrieve products associated with a payment page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        message: "Invalid page ID.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.getAssociatedProducts(99999);
+        throw new Error("Expected getAssociatedProducts to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid page ID.");
+      }
+    });
+  });
 });
