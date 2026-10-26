@@ -147,6 +147,46 @@ class PaymentPages {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates the details of an existing payment page.
+   * PUT /api/payment-service/external/v1/payment-pages/update-page-details
+   *
+   * @param {Object|FormData} payload - Payment page update payload or FormData instance
+   * @param {number|string} [payload.pageId] - Unique identifier of the payment page to update
+   * @param {string} [payload.pageName] - The name of the payment page
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updatePaymentPage(payload, options = {}) {
+    let formData = payload;
+
+    if (!(payload instanceof FormData)) {
+      const pageId = payload && (payload.pageId !== undefined ? payload.pageId : payload.id);
+
+      if (pageId === undefined || pageId === null || pageId === "") {
+        throw new Error("Invalid payload: 'pageId' is required to update payment page details.");
+      }
+
+      formData = new FormData();
+      for (const [key, value] of Object.entries(payload)) {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            value.forEach((item) => formData.append(`${key}[]`, item));
+          } else {
+            formData.append(key, value);
+          }
+        }
+      }
+    }
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/payment-pages/update-page-details",
+      formData,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
