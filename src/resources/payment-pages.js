@@ -413,6 +413,22 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Retrieves a list of payment pages via the transaction service.
+   * GET /api/transaction-service/external/v1/payment-pages
+   *
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing the list of payment pages
+   */
+  async listPaymentPages(options = {}) {
+    return this.client.request(
+      "GET",
+      "/api/transaction-service/external/v1/payment-pages",
+      null,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
