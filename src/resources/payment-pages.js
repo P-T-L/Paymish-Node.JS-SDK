@@ -288,6 +288,43 @@ class PaymentPages {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Adds products to a payment page.
+   * POST /api/payment-service/external/v1/payment-pages/payment-page-add-product
+   *
+   * @param {Object} payload - Payload containing pageId and productIds
+   * @param {number|string} payload.pageId - The ID of the payment page
+   * @param {string|Array<number|string>} payload.productIds - Comma-separated string or array of product IDs to add
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async addProductToPaymentPage(payload, options = {}) {
+    const pageId = payload && (payload.pageId !== undefined ? payload.pageId : payload.id);
+    let productIds = payload && payload.productIds;
+
+    if (!payload || pageId === undefined || pageId === null || pageId === "" || !productIds) {
+      throw new Error(
+        "Invalid payload: 'pageId' and 'productIds' are required to add products to a payment page."
+      );
+    }
+
+    if (Array.isArray(productIds)) {
+      productIds = productIds.join(",");
+    }
+
+    const requestPayload = {
+      pageId,
+      productIds: String(productIds),
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/payment-pages/payment-page-add-product",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
