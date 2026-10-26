@@ -8,6 +8,7 @@ const DedicatedVirtualAccount = require("./src/resources/dedicated-virtual-accou
 const Dispute = require("./src/resources/dispute");
 const InitializeCheckout = require("./src/resources/initialize-checkout");
 const Invoices = require("./src/resources/invoices");
+const PaymentPages = require("./src/resources/payment-pages");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 const TransactionDisputes = require("./src/resources/transaction-disputes");
 
@@ -25,6 +26,7 @@ class Paymish {
     this.transactionDisputes = new TransactionDisputes(this.client);
     this.initializeCheckout = new InitializeCheckout(this.client);
     this.invoices = new Invoices(this.client);
+    this.paymentPages = new PaymentPages(this.client);
   }
 }
 

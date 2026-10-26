@@ -30,3 +30,5 @@ class PaymentPages {
     );
   }
 }
+
+module.exports = PaymentPages;
