@@ -759,4 +759,85 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("deleteProductFromPaymentPage()", () => {
+    test("should successfully delete a product from a payment page (200 OK)", async () => {
+      const mockResponseBody = {
+        message: "Product deleted from payment page successfully.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        paymentPageProductId: 123,
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.deleteProductFromPaymentPage(payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/payment-page-delete-product",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            Authorization: "Bearer sk_test_secret_key",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if paymentPageProductId is missing", async () => {
+      await expect(paymish.paymentPages.deleteProductFromPaymentPage()).rejects.toThrow(
+        "Invalid payload: 'paymentPageProductId' is required to delete a product from a payment page."
+      );
+
+      await expect(paymish.paymentPages.deleteProductFromPaymentPage({})).rejects.toThrow(
+        "Invalid payload: 'paymentPageProductId' is required to delete a product from a payment page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        message: "Invalid payment page product ID.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.deleteProductFromPaymentPage(99999);
+        throw new Error(
+          "Expected deleteProductFromPaymentPage to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid payment page product ID.");
+      }
+    });
+  });
 });
