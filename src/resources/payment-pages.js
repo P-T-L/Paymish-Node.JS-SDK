@@ -122,6 +122,31 @@ class PaymentPages {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves details of a specific payment page by its ID.
+   * GET /api/payment-service/external/v1/payment-pages/get-page-details
+   *
+   * @param {Object|string|number} params - Query parameters object containing pageId or direct pageId value
+   * @param {number|string} [params.pageId] - The ID of the payment page to retrieve details for
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload containing payment page details
+   */
+  async getPageDetails(params, options = {}) {
+    const pageId =
+      typeof params === "object" && params !== null ? params.pageId || params.id : params;
+
+    if (pageId === undefined || pageId === null || pageId === "") {
+      throw new Error("Invalid parameter: 'pageId' is required to retrieve payment page details.");
+    }
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("pageId", pageId);
+
+    const endpoint = `/api/payment-service/external/v1/payment-pages/get-page-details?${queryParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = PaymentPages;
