@@ -325,6 +325,45 @@ class PaymentPages {
       options
     );
   }
+
+  /**
+   * Deletes a product from a payment page.
+   * POST /api/payment-service/external/v1/payment-pages/payment-page-delete-product
+   *
+   * @param {Object|number|string} payload - Payload containing paymentPageProductId or direct ID value
+   * @param {number|string} payload.paymentPageProductId - The ID of the product on the payment page to delete
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteProductFromPaymentPage(payload, options = {}) {
+    const paymentPageProductId =
+      typeof payload === "object" && payload !== null
+        ? payload.paymentPageProductId !== undefined
+          ? payload.paymentPageProductId
+          : payload.id
+        : payload;
+
+    if (
+      paymentPageProductId === undefined ||
+      paymentPageProductId === null ||
+      paymentPageProductId === ""
+    ) {
+      throw new Error(
+        "Invalid payload: 'paymentPageProductId' is required to delete a product from a payment page."
+      );
+    }
+
+    const requestPayload = {
+      paymentPageProductId,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/payment-pages/payment-page-delete-product",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = PaymentPages;
