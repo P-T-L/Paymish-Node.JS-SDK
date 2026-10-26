@@ -506,4 +506,91 @@ describe("PaymentPages Module", () => {
       }
     });
   });
+
+  describe("deletePage()", () => {
+    test("should successfully delete a payment page (200 OK)", async () => {
+      const mockResponseBody = {
+        message: "Page deleted successfully.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        pageId: 447,
+        isDeleted: true,
+      };
+
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.paymentPages.deletePage(payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/payment-pages/delete-page",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            Authorization: "Bearer sk_test_secret_key",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if pageId or isDeleted is missing", async () => {
+      await expect(paymish.paymentPages.deletePage({ pageId: 447 })).rejects.toThrow(
+        "Invalid payload: 'pageId' and 'isDeleted' are required to delete a payment page."
+      );
+
+      await expect(paymish.paymentPages.deletePage({ isDeleted: true })).rejects.toThrow(
+        "Invalid payload: 'pageId' and 'isDeleted' are required to delete a payment page."
+      );
+
+      await expect(paymish.paymentPages.deletePage(null)).rejects.toThrow(
+        "Invalid payload: 'pageId' and 'isDeleted' are required to delete a payment page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when deletion fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        message: "Invalid page ID or parameters.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.paymentPages.deletePage({
+          pageId: 99999,
+          isDeleted: true,
+        });
+        throw new Error("Expected deletePage to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid page ID or parameters.");
+      }
+    });
+  });
 });
