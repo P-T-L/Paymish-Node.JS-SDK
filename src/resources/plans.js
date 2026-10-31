@@ -123,6 +123,55 @@ class Plans {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates details for an existing payment plan.
+   * PUT /api/payment-service/external/v1/plans/update-plan-details
+   *
+   * @param {Object} payload - Update plan details payload
+   * @param {number} payload.planId - The ID of the plan to update
+   * @param {string} payload.planName - The name of the plan
+   * @param {string} payload.planDescription - A description of the plan
+   * @param {number} payload.planAmount - The amount for the plan
+   * @param {string} payload.interval - Interval of the plan (e.g., Daily, Weekly, Monthly)
+   * @param {number} payload.maxNoOfPayment - Maximum number of payments allowed for the plan
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updatePlanDetails(payload, options = {}) {
+    if (
+      !payload ||
+      payload.planId === undefined ||
+      payload.planId === null ||
+      !payload.planName ||
+      !payload.planDescription ||
+      payload.planAmount === undefined ||
+      payload.planAmount === null ||
+      !payload.interval ||
+      payload.maxNoOfPayment === undefined ||
+      payload.maxNoOfPayment === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'planId', 'planName', 'planDescription', 'planAmount', 'interval', and 'maxNoOfPayment' are required."
+      );
+    }
+
+    const requestPayload = {
+      planId: payload.planId,
+      planName: payload.planName,
+      planDescription: payload.planDescription,
+      planAmount: payload.planAmount,
+      interval: payload.interval,
+      maxNoOfPayment: payload.maxNoOfPayment,
+    };
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/plans/update-plan-details",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Plans;

@@ -226,4 +226,95 @@ describe("Plans Resource", () => {
       expect(global.fetch).not.toHaveBeenCalled();
     });
   });
+
+  describe("updatePlanDetails()", () => {
+    test("should successfully update plan details (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Plan updated successfully",
+        data: { id: 98, planName: "Updated Plan Name" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        planId: 98,
+        planName: "Updated Plan Name",
+        planDescription: "Updated plan description",
+        planAmount: 200,
+        interval: "Monthly",
+        maxNoOfPayment: 5,
+      };
+
+      const result = await paymish.plans.updatePlanDetails(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/plans/update-plan-details",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.plans.updatePlanDetails({
+          planId: 98,
+          planName: "Updated Plan Name",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'planId', 'planName', 'planDescription', 'planAmount', 'interval', and 'maxNoOfPayment' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when update fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid request payload.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.plans.updatePlanDetails({
+          planId: 98,
+          planName: "Updated Plan Name",
+          planDescription: "Updated plan description",
+          planAmount: 200,
+          interval: "Monthly",
+          maxNoOfPayment: 5,
+        });
+        throw new Error("Expected updatePlanDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid request payload.");
+      }
+    });
+  });
 });
