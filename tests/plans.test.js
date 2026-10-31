@@ -102,4 +102,68 @@ describe("Plans Resource", () => {
       }
     });
   });
+
+  describe("getPlans()", () => {
+    test("should successfully retrieve payment plans with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Plans retrieved successfully",
+        data: [{ id: 1, planName: "Gold Plan" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        status: "Active",
+        interval: "monthly",
+        page: 1,
+        limit: 10,
+      };
+
+      const result = await paymish.plans.getPlans(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/plans/get-plans?status=Active&interval=monthly&page=1&limit=10",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully retrieve payment plans without query parameters", async () => {
+      const mockResponseBody = { status: "success", data: [] };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.plans.getPlans();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/plans/get-plans",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+  });
 });
