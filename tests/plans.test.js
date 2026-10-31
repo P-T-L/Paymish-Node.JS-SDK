@@ -1,5 +1,5 @@
-const Paymish = require("../src/index");
-const PaymishError = require("../src/errors/paymish-error");
+const Paymish = require("../index");
+const { PaymishError } = require("../src/errors");
 
 describe("Plans Resource", () => {
   let paymish;
