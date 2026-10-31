@@ -227,6 +227,23 @@ class Plans {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Creates a new payment plan via the transaction service.
+   * POST /api/transaction-service/external/v1/plans
+   *
+   * @param {Object} [payload] - Optional payload data for creating the plan
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async createPlanTransactionService(payload = {}, options = {}) {
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/plans",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Plans;

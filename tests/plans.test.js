@@ -455,4 +455,73 @@ describe("Plans Resource", () => {
       }
     });
   });
+
+  describe("createPlanTransactionService()", () => {
+    test("should successfully create a plan via transaction service (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Plan created successfully via transaction service",
+        data: { reference: "PM-PLAN-REF-123" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = { planName: "Tx Plan", amount: 1000 };
+      const authHeaders = { Authorization: "Bearer sk_test_secret_key" };
+      const result = await paymish.plans.createPlanTransactionService(payload, {
+        headers: authHeaders,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/plans",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            Authorization: "Bearer sk_test_secret_key",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when creation fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid payload for transaction plan creation.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.plans.createPlanTransactionService({});
+        throw new Error(
+          "Expected createPlanTransactionService to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid payload for transaction plan creation.");
+      }
+    });
+  });
 });
