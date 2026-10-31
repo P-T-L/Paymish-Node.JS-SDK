@@ -166,4 +166,64 @@ describe("Plans Resource", () => {
       expect(result).toEqual(mockResponseBody);
     });
   });
+
+  describe("getPlanDetails()", () => {
+    test("should successfully retrieve plan details using planId (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Plan details retrieved successfully",
+        data: { id: 5, planName: "Gold Plan" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.plans.getPlanDetails(5);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/plans/get-plan-details?planId=5",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing planId inside an options object", async () => {
+      const mockResponseBody = { status: "success", data: { id: 5 } };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.plans.getPlanDetails({ planId: 5 });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/plans/get-plan-details?planId=5",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if planId is missing", async () => {
+      await expect(paymish.plans.getPlanDetails()).rejects.toThrow(
+        "Invalid parameter: 'planId' is required to retrieve plan details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
 });

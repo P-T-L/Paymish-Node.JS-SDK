@@ -97,6 +97,32 @@ class Plans {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves detailed information for a specific payment plan.
+   * GET /api/payment-service/external/v1/plans/get-plan-details
+   *
+   * @param {Object|number|string} identifier - Plan ID or options object containing planId
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getPlanDetails(identifier, options = {}) {
+    let planId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      planId = identifier.planId !== undefined ? identifier.planId : identifier.id;
+    } else {
+      planId = identifier;
+    }
+
+    if (planId === undefined || planId === null || planId === "") {
+      throw new Error("Invalid parameter: 'planId' is required to retrieve plan details.");
+    }
+
+    const endpoint = `/api/payment-service/external/v1/plans/get-plan-details?planId=${encodeURIComponent(planId)}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Plans;
