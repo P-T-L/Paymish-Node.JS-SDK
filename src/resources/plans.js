@@ -172,6 +172,34 @@ class Plans {
       options
     );
   }
+
+  /**
+   * Deletes or updates the status of an existing payment plan.
+   * POST /api/payment-service/external/v1/plans/delete-plan
+   *
+   * @param {Object} payload - Delete plan payload
+   * @param {number} payload.planId - The ID of the plan
+   * @param {string} payload.status - The plan status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deletePlan(payload, options = {}) {
+    if (!payload || payload.planId === undefined || payload.planId === null || !payload.status) {
+      throw new Error("Invalid payload: 'planId' and 'status' are required.");
+    }
+
+    const requestPayload = {
+      planId: payload.planId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/plans/delete-plan",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Plans;
