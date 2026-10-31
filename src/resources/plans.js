@@ -57,6 +57,46 @@ class Plans {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of payment plans with optional filters.
+   * GET /api/payment-service/external/v1/plans/get-plans
+   *
+   * @param {Object} [params] - Optional query parameters for filtering and pagination
+   * @param {string} [params.status] - Status filter (Active/Archived/Deleted)
+   * @param {string} [params.interval] - Interval filter (Daily/Weekly/Monthly/Quarterly/Biannually/Annually)
+   * @param {number} [params.noOfSubscriptions] - Number of subscriptions filter
+   * @param {string} [params.noOfSubscriptionType] - Number of subscription type (moreThan/lessThan/equals)
+   * @param {number} [params.amount] - Amount filter
+   * @param {string} [params.amountType] - Amount type (moreThan/lessThan/equals)
+   * @param {number} [params.revenueAmount] - Revenue amount filter
+   * @param {string} [params.revenueType] - Revenue amount type (moreThan/lessThan/equals)
+   * @param {string} [params.searchPlanText] - Search plan text
+   * @param {string} [params.startDate] - Start date filter (YYYY-MM-DD)
+   * @param {string} [params.endDate] - End date filter (YYYY-MM-DD)
+   * @param {number} [params.limit] - Number of items per page
+   * @param {number} [params.page] - Page number
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getPlans(params = {}, options = {}) {
+    let endpoint = "/api/payment-service/external/v1/plans/get-plans";
+
+    if (params && typeof params === "object" && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      }
+      const queryString = searchParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Plans;
