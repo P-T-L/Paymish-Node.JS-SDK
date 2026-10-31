@@ -665,7 +665,7 @@ const invoice = await paymish.invoices.getInvoiceById("PM-REF-12345", {
 
 Checks if a custom payment page link exists or is available.
 
-- `payload (Object | string, Required)` — Payload containing `customLink` (or alias `link`) or a direct link string.
+- `payload (Object | string, Required)` — Payload containing `customLink` or a direct link string.
 - `options (Object, Optional)` — Custom per-request options.
 
 ```javascript
@@ -817,10 +817,10 @@ await paymish.paymentPages.deleteProductFromPaymentPage(
 Allocates a one-time dynamic virtual account (bank transfer option) for a checkout session.
 
 - `payload (Object, Required)`
-  - `accessCode (string, Required)` — Checkout session access code (accepts `access_code` alias).
+  - `accessCode (string, Required)` — Checkout session access code.
   - `amount (number, Required)` — Amount to be paid in Naira.
   - `email (string, Optional)` — Customer email address.
-  - `pageReference (string, Optional)` — Optional reference (accepts `page_reference` alias).
+  - `pageReference (string, Optional)` — Optional reference.
 - `options (Object, Optional)` — Custom per-request options.
 
 ```javascript
