@@ -200,6 +200,33 @@ class Plans {
       options
     );
   }
+
+  /**
+   * Retrieves a list of payment plans via the transaction service.
+   * GET /api/transaction-service/external/v1/plans
+   *
+   * @param {Object} [params] - Optional query parameters for filtering and pagination
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async listPlansTransactionService(params = {}, options = {}) {
+    let endpoint = "/api/transaction-service/external/v1/plans";
+
+    if (params && typeof params === "object" && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      }
+      const queryString = searchParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Plans;
