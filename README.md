@@ -857,6 +857,138 @@ const txPage = await paymish.paymentPages.createPaymentPageTransactionService(
 );
 ```
 
+### Plans Resource (`paymish.plans`)
+
+#### createPlan(payload, [options])
+
+Creates a new payment plan.
+
+- `payload (Object, Required)`
+  - `businessId (number, Required)` — ID of the business.
+  - `planName (string, Required)` — Name of the plan.
+  - `planDescription (string, Required)` — Description of the plan.
+  - `planAmount (number, Required)` — Amount for the plan.
+  - `interval (string, Required)` — Interval of the plan (e.g., Monthly, Yearly).
+  - `maxNoOfPayment (number, Required)` — Maximum number of payments allowed for the plan.
+  - `isSubscriptionPageForThisPlan (boolean, Required)` — Indicates if there is a subscription page for this plan.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const plan = await paymish.plans.createPlan(
+  {
+    businessId: 10,
+    planName: "Gold Plan",
+    planDescription: "Monthly premium subscription",
+    planAmount: 5000,
+    interval: "monthly",
+    maxNoOfPayment: 12,
+    isSubscriptionPageForThisPlan: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getPlans([params], [options])`
+
+Retrieves a paginated list of payment plans with optional filters.
+
+- `params (Object, Optional)` — Optional query parameters (e.g., `{ status: "Active", interval: "monthly", page: 1, limit: 10 }`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const plans = await paymish.plans.getPlans(
+  { status: "Active", page: 1 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getPlanDetails(identifier, [options])`
+
+Retrieves detailed information for a specific payment plan.
+
+- `identifier (Object | number | string, Required)` — Plan ID or options object containing `planId`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const planDetails = await paymish.plans.getPlanDetails(98, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updatePlanDetails(payload, [options])`
+
+Updates details for an existing payment plan.
+
+- `payload (Object, Required)`
+  - `planId (number, Required)` — The ID of the plan to update.
+  - `planName (string, Required)` — The name of the plan.
+  - `planDescription (string, Required)` — A description of the plan.
+  - `planAmount (number, Required)` — The amount for the plan.
+  - `interval (string, Required)` — Interval of the plan.
+  - `maxNoOfPayment (number, Required)` — Maximum number of payments allowed.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.plans.updatePlanDetails(
+  {
+    planId: 98,
+    planName: "Updated Plan Name",
+    planDescription: "Updated plan description",
+    planAmount: 200,
+    interval: "Monthly",
+    maxNoOfPayment: 5,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### deletePlan(payload, [options])
+
+Deletes or updates the status of an existing payment plan.
+
+- `payload (Object, Required)`
+  - `planId (number, Required)` — The ID of the plan.
+  - `status (string, Required)` — The plan status action (e.g., `deleted`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.plans.deletePlan(
+  {
+    planId: 98,
+    status: "deleted",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### listPlansTransactionService([params], [options])
+
+Retrieves a list of payment plans via the transaction service.
+
+- `params (Object, Optional)` — Query parameters for filtering and pagination.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transactionPlans = await paymish.plans.listPlansTransactionService(
+  { page: 1 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `createPlanTransactionService([payload], [options])`
+
+Creates a new payment plan via the transaction service.
+
+- `payload (Object, Optional)` — Plan creation payload for transaction service.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const txPlan = await paymish.plans.createPlanTransactionService(
+  { planName: "Tx Plan", amount: 1000 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
