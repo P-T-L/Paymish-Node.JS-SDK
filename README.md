@@ -132,7 +132,7 @@ Retrieves the list of banks supported by Paymish (includes codes required for tr
 
 - `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
 
-```javaScript
+```javascript
 const banks = await paymish.banks.list({
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -147,7 +147,7 @@ Confirms that an account number exists at a bank and returns the account holder'
   - `bank_code (string, Required)` — The bank's code from `list()`.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const resolved = await paymish.banks.resolveAccount(
   {
     account_number: "0123456789",
@@ -220,7 +220,7 @@ Retrieves the list of businesses associated with the account.
 
 - `options (Object, Optional)` — Custom per-request configuration options.
 
-```javaScript
+```javascript
 const businesses = await paymish.business.listBusinesses({
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -240,7 +240,7 @@ Creates a new customer record.
   - `countryId (number, Required)` — Country identifier.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const customer = await paymish.customer.createCustomer(
   {
     email: "john.doe@example.com",
@@ -269,7 +269,7 @@ Retrieves a paginated list of customers. Automatically defaults to `page: 1` and
 - `params (Object, Optional)` — Query parameters (e.g., `{ page: 2, limit: 20, search: "John" }`).
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const customers = await paymish.customer.listCustomers(
   { page: 1, limit: 15 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -285,7 +285,7 @@ Blacklists or whitelists a customer profile.
   - `isBlackListed (boolean, Required)` — Set true to blacklist or false to whitelist.
 - options (Object, Optional) — Custom per-request options.
 
-```javaScript
+```javascript
 await paymish.customer.blacklistCustomer(
   {
     customerReference: "CUST_12345",
@@ -302,7 +302,7 @@ Retrieves customer details by integer ID.
 - `customerId (number, Required)` — The customer's integer ID (supports passing as a direct number or via { customerId: number }).
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const customerDetails = await paymish.customer.getCustomerById(101, {
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -317,7 +317,7 @@ Retrieves a paginated list of transaction-service customers.
 - `params (Object, Optional)` — Query parameters for filtering and pagination.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const txCustomers = await paymish.transactionCustomer.listCustomers(
   { page: 1, limit: 10 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -338,7 +338,7 @@ Retrieves transaction customer details by ID (supports string or numeric IDs).
 - `identifier (string | number | Object, Required)` — Customer ID string/number or options object containing id or customerId.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const txCustomer = await paymish.transactionCustomer.getCustomerById("tx_cust_123", {
 `headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -352,7 +352,7 @@ Updates an existing transaction customer by ID.
 - `payload (Object, Required)` — Updated customer properties.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 await paymish.transactionCustomer.updateCustomer(
   "tx_cust_123",
   { firstName: "Jonathan" },
@@ -369,7 +369,7 @@ Creates a new dedicated virtual account.
 - `payload (Object, Required)` — Account creation details payload.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const account = await paymish.dedicatedVirtualAccount.createAccount(
   { customerId: "tx_cust_123", preferredBank: "test-bank" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -408,7 +408,7 @@ Requeries the status of a dedicated virtual account.
   - `date (string, Optional)` — Optional date filter.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const requeryResult = await paymish.dedicatedVirtualAccount.requeryAccount(
   { account_number: "1234567890", provider_slug: "test-provider" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -426,7 +426,7 @@ Assigns a dedicated virtual account.
   - `phone (string, Required)` — Customer phone number.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const assigned = await paymish.dedicatedVirtualAccount.assignAccount(
   {
     email: "jane.doe@example.com",
@@ -451,7 +451,7 @@ Creates a dispute by uploading a document (evidence image) and providing transac
   - `image (any, Required)` — The file or stream to be uploaded (dispute evidence image).
 - `options (Object, Optional)` — Custom per-request configuration options.
 
-```javaScript
+```javascript
 const dispute = await paymish.dispute.createDispute(
   {
     transactionRef: "PM-TX-12345",
@@ -473,7 +473,7 @@ Retrieves a paginated list of disputes.
   - `search (string, Optional)` — Search string to filter disputes by transaction reference or customer details.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const disputes = await paymish.dispute.listDisputes(
   { limit: 10, page: 1, search: "PM-TX-12345" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -487,7 +487,7 @@ Retrieves dispute details by transaction reference.
 - `transactionRef (string \| Object, Required)` — The transaction reference string or an object containing `{ transactionRef }`.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const details = await paymish.dispute.getDisputeDetails("PM-TX-12345", {
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -503,12 +503,12 @@ Updates an existing dispute record.
   - `status (string, Required)` — The new status of the dispute (e.g., `resolved`, `pending`).
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const updated = await paymish.dispute.updateDispute(
   {
-  tnxRef: "PM-TX-12345",
-  reason: "Merchant accepted liability",
-  status: "resolved",
+    tnxRef: "PM-TX-12345",
+    reason: "Merchant accepted liability",
+    status: "resolved",
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
@@ -522,7 +522,7 @@ Retrieves the list of transaction-level disputes.
 
 - `options (Object, Optional)` — Custom per-request configuration options (e.g., headers containing `Authorization`).
 
-```javaScript
+```javascript
 const disputes = await paymish.transactionDisputes.listDisputes({
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -535,7 +535,7 @@ Creates a new transaction-level dispute.
 - `payload (Object, Optional)` — Dispute creation details payload.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const newDispute = await paymish.transactionDisputes.createDispute(
   { transactionId: "tx_123", reason: "fraud" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -549,7 +549,7 @@ Retrieves a transaction-level dispute by its ID.
 - `disputeId (string \| number \| Object, Required)` — The dispute ID string/number or options object.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const dispute = await paymish.transactionDisputes.getDisputeById("disp_123", {
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
@@ -563,7 +563,7 @@ Updates an existing transaction-level dispute by its ID.
 - `payload (Object, Required)` — Update payload containing updated dispute details.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const updatedDispute = await paymish.transactionDisputes.updateDispute(
   "disp_123",
   { status: "resolved", resolutionNote: "Refund issued" },
@@ -582,7 +582,7 @@ Initializes a standard checkout transaction from your backend.
   - `amount (string \| number, Required)` — Amount in currency subunits (e.g. kobo/cents).
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const response = await paymish.initializeCheckout.initializeTransaction(
   { email: "customer@email.com", amount: 10000 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -599,7 +599,7 @@ Initializes a transaction and gets back a one-time Dynamic Virtual Account (bank
   - `reference (string, Optional)` — Optional unique reference for this transaction (auto-generated if omitted).
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const dvaResponse = await paymish.initializeCheckout.initializeDva(
   { email: "customer@email.com", amount: 10000, reference: "my_ref_123" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -619,7 +619,7 @@ Creates a new invoice.
   - `sendImmediately (boolean, Optional)` — Defaults to true. When false, the invoice is created as a Draft.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const invoice = await paymish.invoices.createInvoice(
   { customerEmail: "customer@email.com", amount: 5000 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
@@ -639,24 +639,222 @@ Retrieves a paginated list of invoices with optional query filters.
   - `limit (number, Optional)` — Number of items per page.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const invoices = await paymish.invoices.listInvoices(
   { status: "paid", page: 1, limit: 10 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
 ```
 
-#### getInvoiceById(invoiceId, [options])
+#### `getInvoiceById(invoiceId, [options])`
 
 Retrieves a single invoice by its ID.
 
 - `invoiceId (string \| number \| Object, Required)` — The invoice ID string/number or options object.
 - `options (Object, Optional)` — Custom per-request options.
 
-```javaScript
+```javascript
 const invoice = await paymish.invoices.getInvoiceById("PM-REF-12345", {
   headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
 });
+```
+
+### PaymentPages Resource (`paymish.paymentPages`)
+
+#### `checkCustomLinkExists(payload, [options])`
+
+Checks if a custom payment page link exists or is available.
+
+- `payload (Object | string, Required)` — Payload containing `customLink` (or alias `link`) or a direct link string.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const result = await paymish.paymentPages.checkCustomLinkExists(
+  {
+    customLink: "https://example.com/my-custom-link",
+  },
+  {
+    headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+  }
+);
+```
+
+#### `createPaymentPage(payload, [options])`
+
+Creates a new payment page.
+
+- `payload (Object, Required)` — Payment page creation details.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const page = await paymish.paymentPages.createPaymentPage(
+  {
+    title: "Summer Collection",
+    description: "Checkout for summer items",
+    amount: 15000,
+    customLink: "https://example.com/summer-sale",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getPaymentPages([params], [options])`
+
+Retrieves a list of payment pages.
+
+- `params (Object, Optional)` — Query parameters for filtering and pagination.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const pages = await paymish.paymentPages.getPaymentPages(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getPageDetails(identifier, [options])`
+
+Retrieves detailed information for a specific payment page.
+
+- `identifier (string | number | Object, Required)` — Page ID, reference, or options object.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const details = await paymish.paymentPages.getPageDetails("page_ref_123", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updatePaymentPage(payload, [options])`
+
+Updates details for an existing payment page.
+
+- `payload (Object, Required)` — Update details payload containing page identifiers and fields to update.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.paymentPages.updatePaymentPage(
+  { pageId: 123, title: "Updated Title" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `updatePageStatus(payload, [options])`
+
+Updates the active or published status of a payment page.
+
+- `payload (Object, Required)` — Status update payload.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.paymentPages.updatePageStatus(
+  { pageId: 123, status: "active" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deletePage(payload, [options])`
+
+Deletes a payment page.
+
+- `payload (Object | string | number, Required)` — Page ID or payload containing the page identifier.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.paymentPages.deletePage(123, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `getAssociatedProducts(identifier, [options])`
+
+Retrieves products associated with a specific payment page.
+
+- `identifier (string | number | Object, Required)` — Page ID or options object.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const products = await paymish.paymentPages.getAssociatedProducts(123, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `addProductToPaymentPage(payload, [options])`
+
+Adds one or more products to a payment page.
+
+- `payload (Object, Required)`
+  - `pageId (number | string, Required)` — The ID of the payment page.
+  - `productIds (Array | string, Required)` — Product ID(s) to add.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.paymentPages.addProductToPaymentPage(
+  {
+    pageId: 447,
+    productIds: [123, 456, 789],
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deleteProductFromPaymentPage(payload, [options])`
+
+Deletes a product from a payment page.
+
+- `payload (Object | string | number, Required)` — Payload containing `paymentPageProductId` or direct product ID value.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.paymentPages.deleteProductFromPaymentPage(
+  { paymentPageProductId: 123 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `initiateCheckoutDynamicVirtualAccount(payload, [options])`
+
+Allocates a one-time dynamic virtual account (bank transfer option) for a checkout session.
+
+- `payload (Object, Required)`
+  - `accessCode (string, Required)` — Checkout session access code (accepts `access_code` alias).
+  - `amount (number, Required)` — Amount to be paid in Naira.
+  - `email (string, Optional)` — Customer email address.
+  - `pageReference (string, Optional)` — Optional reference (accepts `page_reference` alias).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const dva = await paymish.paymentPages.initiateCheckoutDynamicVirtualAccount({
+  accessCode: "chk_9f8a7b6c5d4e",
+  amount: 5000,
+  email: "customer@example.com",
+});
+```
+
+#### `listPaymentPages([options])`
+
+Lists payment pages via the transaction service.
+
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transactionPages = await paymish.paymentPages.listPaymentPages({
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### createPaymentPageTransactionService(payload, [options])
+
+Creates a payment page via the transaction service endpoint.
+
+- `payload (Object, Optional)` — Payment page creation payload.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const txPage = await paymish.paymentPages.createPaymentPageTransactionService(
+  { title: "New Transaction Page" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
 ```
 
 ---
