@@ -58,6 +58,42 @@ class Products {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of products with optional filters.
+   * GET /api/payment-service/external/v1/products/get-products
+   *
+   * @param {Object} [params] - Optional query parameters for filtering and pagination
+   * @param {boolean} [params.status] - Product status (true/false)
+   * @param {string} [params.quantityType] - Stock type (Limited/Unlimited)
+   * @param {number} [params.quantityStock] - Quantity in stock
+   * @param {string} [params.quantityStockType] - Quantity stock type (moreThan/lessThan/equals)
+   * @param {string} [params.productPrice] - Product price
+   * @param {string} [params.productPriceType] - Product price type (moreThan/lessThan/equals)
+   * @param {string} [params.searchPlanText] - Search plan text
+   * @param {string} [params.startDate] - Start date (in ISO 8601 format)
+   * @param {string} [params.endDate] - End date (in ISO 8601 format)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getProducts(params = {}, options = {}) {
+    let endpoint = "/api/payment-service/external/v1/products/get-products";
+
+    if (params && typeof params === "object" && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      }
+      const queryString = searchParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Products;

@@ -102,4 +102,67 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("getProducts()", () => {
+    test("should successfully retrieve products with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Products retrieved successfully",
+        data: [{ id: 1, productName: "Sample Product" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        status: true,
+        quantityType: "Limited",
+        productPrice: "100.00",
+      };
+
+      const result = await paymish.products.getProducts(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-products?status=true&quantityType=Limited&productPrice=100.00",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully retrieve products without query parameters", async () => {
+      const mockResponseBody = { status: "success", data: [] };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.products.getProducts();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-products",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+  });
 });
