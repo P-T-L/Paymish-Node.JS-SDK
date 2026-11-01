@@ -1843,4 +1843,91 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("updateDiscountCodeDetails()", () => {
+    test("should successfully update discount code details (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Discount code details updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = { id: 1, value: 25 };
+      const result = await paymish.products.updateDiscountCodeDetails(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/update-discount-code-details",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully update discount code details without parameters", async () => {
+      const mockResponseBody = { status: "success", message: "Updated" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.products.updateDiscountCodeDetails();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/update-discount-code-details",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({}),
+        })
+      );
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid discount code details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.updateDiscountCodeDetails({ id: 999 });
+        throw new Error(
+          "Expected updateDiscountCodeDetails to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid discount code details.");
+      }
+    });
+  });
 });

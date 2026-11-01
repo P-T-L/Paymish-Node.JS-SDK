@@ -837,6 +837,25 @@ class Products {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates discount code details.
+   * PUT /api/payment-service/external/v1/products/update-discount-code-details
+   *
+   * @param {Object} [payload={}] - Update discount code details payload
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateDiscountCodeDetails(payload = {}, options = {}) {
+    const requestPayload = payload !== null && typeof payload === "object" ? payload : {};
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/products/update-discount-code-details",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
