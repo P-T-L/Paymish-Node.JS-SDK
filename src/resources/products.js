@@ -611,6 +611,33 @@ class Products {
       options
     );
   }
+
+  /**
+   * Retrieves delivery fees for a specific product.
+   * GET /api/payment-service/external/v1/products/get-delivery-fees
+   *
+   * @param {Object|string|number} identifier - Product ID or options object containing productId or id
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getDeliveryFees(identifier, options = {}) {
+    let productId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      productId = identifier.productId !== undefined ? identifier.productId : identifier.id;
+    } else {
+      productId = identifier;
+    }
+
+    if (productId === undefined || productId === null || productId === "") {
+      throw new Error("Invalid parameter: 'productId' is required to retrieve delivery fees.");
+    }
+
+    const searchParams = new URLSearchParams({ productId: String(productId) });
+    const endpoint = `/api/payment-service/external/v1/products/get-delivery-fees?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Products;
