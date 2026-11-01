@@ -343,6 +343,40 @@ class Products {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Deletes or updates the status of an existing product media item.
+   * POST /api/payment-service/external/v1/products/delete-product-media
+   *
+   * @param {Object} payload - Delete product media payload
+   * @param {string} payload.mediaId - The ID of the media item
+   * @param {boolean} payload.status - The status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteProductMedia(payload, options = {}) {
+    if (
+      !payload ||
+      payload.mediaId === undefined ||
+      payload.mediaId === null ||
+      payload.status === undefined ||
+      payload.status === null
+    ) {
+      throw new Error("Invalid payload: 'mediaId' and 'status' are required.");
+    }
+
+    const requestPayload = {
+      mediaId: payload.mediaId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/delete-product-media",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
