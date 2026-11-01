@@ -121,6 +121,40 @@ class Products {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Deletes or updates the status of an existing product.
+   * POST /api/payment-service/external/v1/products/delete-product
+   *
+   * @param {Object} payload - Delete product payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {boolean} payload.status - The product status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteProduct(payload, options = {}) {
+    if (
+      !payload ||
+      payload.productId === undefined ||
+      payload.productId === null ||
+      payload.status === undefined ||
+      payload.status === null
+    ) {
+      throw new Error("Invalid payload: 'productId' and 'status' are required.");
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/delete-product",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
