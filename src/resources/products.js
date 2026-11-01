@@ -505,6 +505,44 @@ class Products {
       options
     );
   }
+
+  /**
+   * Deletes or updates the status of an existing digital download file.
+   * POST /api/payment-service/external/v1/products/delete-digital-download-files
+   *
+   * @param {Object} payload - Delete digital download file payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {string} payload.digitalDownloadFileId - The ID of the digital download file
+   * @param {boolean} payload.status - The status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteDigitalDownloadFiles(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.productId ||
+      !payload.digitalDownloadFileId ||
+      payload.status === undefined ||
+      payload.status === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'productId', 'digitalDownloadFileId', and 'status' are required."
+      );
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      digitalDownloadFileId: payload.digitalDownloadFileId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/delete-digital-download-files",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;

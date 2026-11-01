@@ -1082,4 +1082,90 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("deleteDigitalDownloadFiles()", () => {
+    test("should successfully delete/update digital download file status (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Digital download file status updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "143",
+        digitalDownloadFileId: "29",
+        status: false,
+      };
+
+      const result = await paymish.products.deleteDigitalDownloadFiles(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/delete-digital-download-files",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.deleteDigitalDownloadFiles({
+          productId: "143",
+          status: false,
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'productId', 'digitalDownloadFileId', and 'status' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when deletion fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "File not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.deleteDigitalDownloadFiles({
+          productId: "143",
+          digitalDownloadFileId: "999",
+          status: false,
+        });
+        throw new Error(
+          "Expected deleteDigitalDownloadFiles to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("File not found.");
+      }
+    });
+  });
 });
