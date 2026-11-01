@@ -1168,4 +1168,87 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("setDownloadLinkExpiry()", () => {
+    test("should successfully set download link expiry (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Download link expiry updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "143",
+        isDownloadLinkExpiry: true,
+        downloadLinkExpiryDuration: "30",
+      };
+
+      const result = await paymish.products.setDownloadLinkExpiry(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/set-download-link-expiry",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.setDownloadLinkExpiry({
+          productId: "143",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'productId', 'isDownloadLinkExpiry', and 'downloadLinkExpiryDuration' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Product not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.setDownloadLinkExpiry({
+          productId: "999",
+          isDownloadLinkExpiry: true,
+          downloadLinkExpiryDuration: "30",
+        });
+        throw new Error("Expected setDownloadLinkExpiry to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Product not found.");
+      }
+    });
+  });
 });

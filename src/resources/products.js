@@ -543,6 +543,44 @@ class Products {
       options
     );
   }
+
+  /**
+   * Sets the download link expiry configuration for a product.
+   * PUT /api/payment-service/external/v1/products/set-download-link-expiry
+   *
+   * @param {Object} payload - Set download link expiry payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {boolean} payload.isDownloadLinkExpiry - Flag to indicate if download link expiry is enabled
+   * @param {string} payload.downloadLinkExpiryDuration - The duration for which the download link will be active
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async setDownloadLinkExpiry(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.productId ||
+      payload.isDownloadLinkExpiry === undefined ||
+      payload.isDownloadLinkExpiry === null ||
+      !payload.downloadLinkExpiryDuration
+    ) {
+      throw new Error(
+        "Invalid payload: 'productId', 'isDownloadLinkExpiry', and 'downloadLinkExpiryDuration' are required."
+      );
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      isDownloadLinkExpiry: payload.isDownloadLinkExpiry,
+      downloadLinkExpiryDuration: payload.downloadLinkExpiryDuration,
+    };
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/products/set-download-link-expiry",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
