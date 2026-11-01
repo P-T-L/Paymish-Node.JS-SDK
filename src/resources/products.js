@@ -856,6 +856,36 @@ class Products {
       options
     );
   }
+
+  /**
+   * Verifies a discount code, with an optional product ID query parameter.
+   * POST /api/payment-service/external/v1/products/verify-discount-code
+   *
+   * @param {Object} payload - Verify discount code payload
+   * @param {string|number} [payload.productId] - Optional product ID query parameter
+   * @param {string} payload.code - The discount code to verify
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async verifyDiscountCode(payload, options = {}) {
+    if (!payload || !payload.code) {
+      throw new Error("Invalid payload: 'code' is required.");
+    }
+
+    const queryParams = new URLSearchParams();
+    if (payload.productId !== undefined && payload.productId !== null && payload.productId !== "") {
+      queryParams.append("productId", String(payload.productId));
+    }
+
+    const queryString = queryParams.toString();
+    const endpoint = `/api/payment-service/external/v1/products/verify-discount-code${queryString ? `?${queryString}` : ""}`;
+
+    const requestPayload = {
+      code: payload.code,
+    };
+
+    return this.client.request("POST", endpoint, requestPayload, options);
+  }
 }
 
 module.exports = Products;

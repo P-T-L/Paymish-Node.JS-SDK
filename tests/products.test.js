@@ -1930,4 +1930,104 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("verifyDiscountCode()", () => {
+    test("should successfully verify discount code with productId query param (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Discount code is valid",
+        data: { discount: 20 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "123",
+        code: "SUMMER20",
+      };
+
+      const result = await paymish.products.verifyDiscountCode(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/verify-discount-code?productId=123",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify({ code: "SUMMER20" }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully verify discount code without productId", async () => {
+      const mockResponseBody = { status: "success", message: "Valid" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.products.verifyDiscountCode({ code: "SUMMER20" });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/verify-discount-code",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ code: "SUMMER20" }),
+        })
+      );
+    });
+
+    test("should throw early validation error if code is missing", async () => {
+      await expect(
+        paymish.products.verifyDiscountCode({
+          productId: "123",
+        })
+      ).rejects.toThrow("Invalid payload: 'code' is required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when verification fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid or expired discount code.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.verifyDiscountCode({ code: "EXPIRED" });
+        throw new Error("Expected verifyDiscountCode to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid or expired discount code.");
+      }
+    });
+  });
 });
