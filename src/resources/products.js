@@ -748,6 +748,60 @@ class Products {
       options
     );
   }
+
+  /**
+   * Creates a new discount code.
+   * POST /api/payment-service/external/v1/products/add-discount-code
+   *
+   * @param {Object} payload - Add discount code payload
+   * @param {number} [payload.productId] - The ID of the product
+   * @param {string} payload.code - The discount code
+   * @param {number} payload.value - The discount value
+   * @param {string} payload.discounttype - The type of discount
+   * @param {number} [payload.minOrderAmount] - Minimum order amount
+   * @param {number} [payload.maxUsePerCustomer] - Maximum uses per customer
+   * @param {number} [payload.maxClaims] - Maximum claims
+   * @param {string} [payload.startDate] - Start date
+   * @param {string} [payload.endDate] - End date
+   * @param {boolean} [payload.isActive] - Whether the discount code is active
+   * @param {boolean} [payload.isDelete] - Whether the discount code is deleted
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async addDiscountCode(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.code ||
+      payload.value === undefined ||
+      payload.value === null ||
+      !payload.discounttype
+    ) {
+      throw new Error("Invalid payload: 'code', 'value', and 'discounttype' are required.");
+    }
+
+    const requestPayload = {
+      ...(payload.productId !== undefined && { productId: payload.productId }),
+      code: payload.code,
+      value: payload.value,
+      discounttype: payload.discounttype,
+      ...(payload.minOrderAmount !== undefined && { minOrderAmount: payload.minOrderAmount }),
+      ...(payload.maxUsePerCustomer !== undefined && {
+        maxUsePerCustomer: payload.maxUsePerCustomer,
+      }),
+      ...(payload.maxClaims !== undefined && { maxClaims: payload.maxClaims }),
+      ...(payload.startDate !== undefined && { startDate: payload.startDate }),
+      ...(payload.endDate !== undefined && { endDate: payload.endDate }),
+      ...(payload.isActive !== undefined && { isActive: payload.isActive }),
+      ...(payload.isDelete !== undefined && { isDelete: payload.isDelete }),
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/add-discount-code",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;

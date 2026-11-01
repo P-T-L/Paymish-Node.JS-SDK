@@ -1678,4 +1678,89 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("addDiscountCode()", () => {
+    test("should successfully create a new discount code (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Discount code created successfully",
+        data: { id: 1, code: "SUMMER20" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: 123,
+        code: "SUMMER20",
+        value: 20,
+        discounttype: "percentage",
+        minOrderAmount: 100,
+        isActive: true,
+      };
+
+      const result = await paymish.products.addDiscountCode(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/add-discount-code",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if code, value, or discounttype is missing", async () => {
+      await expect(
+        paymish.products.addDiscountCode({
+          code: "SUMMER20",
+        })
+      ).rejects.toThrow("Invalid payload: 'code', 'value', and 'discounttype' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Discount code already exists.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.addDiscountCode({
+          code: "EXISTING",
+          value: 10,
+          discounttype: "flat",
+        });
+        throw new Error("Expected addDiscountCode to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Discount code already exists.");
+      }
+    });
+  });
 });
