@@ -678,6 +678,42 @@ class Products {
       options
     );
   }
+
+  /**
+   * Deletes or updates the status of an existing delivery fee record.
+   * POST /api/payment-service/external/v1/products/delete-delivery-fees
+   *
+   * @param {Object} payload - Delete delivery fees payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {string} payload.deliveryFeesId - The ID of the delivery fee record
+   * @param {boolean} payload.status - The status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteDeliveryFees(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.productId ||
+      !payload.deliveryFeesId ||
+      payload.status === undefined ||
+      payload.status === null
+    ) {
+      throw new Error("Invalid payload: 'productId', 'deliveryFeesId', and 'status' are required.");
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      deliveryFeesId: payload.deliveryFeesId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/delete-delivery-fees",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
