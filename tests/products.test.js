@@ -996,4 +996,90 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("renameDigitalDownloadFiles()", () => {
+    test("should successfully rename digital download file (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Digital download file renamed successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "143",
+        digitalDownloadFileId: "29",
+        fileName: "new-file-name.png",
+      };
+
+      const result = await paymish.products.renameDigitalDownloadFiles(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/rename-digital-download-files",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.renameDigitalDownloadFiles({
+          productId: "143",
+          fileName: "new-file-name.png",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'productId', 'digitalDownloadFileId', and 'fileName' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when renaming fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "File not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.renameDigitalDownloadFiles({
+          productId: "143",
+          digitalDownloadFileId: "999",
+          fileName: "new-file-name.png",
+        });
+        throw new Error(
+          "Expected renameDigitalDownloadFiles to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("File not found.");
+      }
+    });
+  });
 });

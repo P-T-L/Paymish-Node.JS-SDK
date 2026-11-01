@@ -473,6 +473,38 @@ class Products {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Renames an existing digital download file associated with a product.
+   * PUT /api/payment-service/external/v1/products/rename-digital-download-files
+   *
+   * @param {Object} payload - Rename digital download file payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {string} payload.digitalDownloadFileId - The ID of the digital download file to rename
+   * @param {string} payload.fileName - The new name for the digital download file
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async renameDigitalDownloadFiles(payload, options = {}) {
+    if (!payload || !payload.productId || !payload.digitalDownloadFileId || !payload.fileName) {
+      throw new Error(
+        "Invalid payload: 'productId', 'digitalDownloadFileId', and 'fileName' are required."
+      );
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      digitalDownloadFileId: payload.digitalDownloadFileId,
+      fileName: payload.fileName,
+    };
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/products/rename-digital-download-files",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
