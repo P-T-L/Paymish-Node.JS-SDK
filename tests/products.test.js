@@ -383,4 +383,119 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("updateProductDetails()", () => {
+    test("should successfully update product details (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Product updated successfully",
+        data: { id: "123", productName: "Updated Product Name" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "123",
+        productName: "Updated Product Name",
+        productDescription: "This is an updated product description.",
+        productPrice: "150.00",
+        quantityType: "Limited",
+        quantityStock: 50,
+        minOrder: 1,
+        maxOrder: 10,
+        lowStockAlert: true,
+        notifyStock: 5,
+        shareableUrl: "https://example.com/product/123",
+        productBackgroundColor: "#FFFFFF",
+        deliveryAddress: "Required",
+        deliveryNote: "Optional",
+        redirectAfterPaymentLink: "https://example.com/thank-you",
+        successMessage: "Thank you for your purchase!",
+        sendNotification: "email",
+        isActive: true,
+      };
+
+      const result = await paymish.products.updateProductDetails(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/update-product-details",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.updateProductDetails({
+          productId: "123",
+          productName: "Updated Product Name",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'productId', 'productName', 'productDescription', 'productPrice', 'quantityType', 'quantityStock', 'minOrder', 'maxOrder', 'lowStockAlert', 'notifyStock', 'shareableUrl', 'productBackgroundColor', 'deliveryAddress', 'deliveryNote', 'redirectAfterPaymentLink', 'successMessage', 'sendNotification', and 'isActive' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when update fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid request payload.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.updateProductDetails({
+          productId: "123",
+          productName: "Updated Product Name",
+          productDescription: "This is an updated product description.",
+          productPrice: "150.00",
+          quantityType: "Limited",
+          quantityStock: 50,
+          minOrder: 1,
+          maxOrder: 10,
+          lowStockAlert: true,
+          notifyStock: 5,
+          shareableUrl: "https://example.com/product/123",
+          productBackgroundColor: "#FFFFFF",
+          deliveryAddress: "Required",
+          deliveryNote: "Optional",
+          redirectAfterPaymentLink: "https://example.com/thank-you",
+          successMessage: "Thank you for your purchase!",
+          sendNotification: "email",
+          isActive: true,
+        });
+        throw new Error("Expected updateProductDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid request payload.");
+      }
+    });
+  });
 });

@@ -189,6 +189,95 @@ class Products {
       options
     );
   }
+
+  /**
+   * Updates detailed information for an existing product.
+   * PUT /api/payment-service/external/v1/products/update-product-details
+   *
+   * @param {Object} payload - Update product details payload
+   * @param {string} payload.productId - The ID of the product to update
+   * @param {string} payload.productName - The name of the product
+   * @param {string} payload.productDescription - The description of the product
+   * @param {string} payload.productPrice - The price of the product
+   * @param {string} payload.quantityType - The type of quantity (Limited/Unlimited)
+   * @param {number} payload.quantityStock - Quantity in stock
+   * @param {number} payload.minOrder - Minimum order quantity
+   * @param {number} payload.maxOrder - Maximum order quantity
+   * @param {boolean} payload.lowStockAlert - Indicates if low stock alerts are enabled
+   * @param {number} payload.notifyStock - The stock level at which notifications should be sent
+   * @param {string} payload.shareableUrl - The URL that can be shared for the product
+   * @param {string} payload.productBackgroundColor - The background color for the product
+   * @param {string} payload.deliveryAddress - Delivery address option (Disabled/Required)
+   * @param {string} payload.deliveryNote - Delivery note option (Disabled/Required/Optional)
+   * @param {string} payload.redirectAfterPaymentLink - The link to redirect after payment
+   * @param {string} payload.successMessage - The success message to show after the payment
+   * @param {string} payload.sendNotification - Notification setting for the product
+   * @param {boolean} payload.isActive - Indicates if the product is active
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateProductDetails(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.productId ||
+      !payload.productName ||
+      !payload.productDescription ||
+      payload.productPrice === undefined ||
+      payload.productPrice === null ||
+      !payload.quantityType ||
+      payload.quantityStock === undefined ||
+      payload.quantityStock === null ||
+      payload.minOrder === undefined ||
+      payload.minOrder === null ||
+      payload.maxOrder === undefined ||
+      payload.maxOrder === null ||
+      payload.lowStockAlert === undefined ||
+      payload.lowStockAlert === null ||
+      payload.notifyStock === undefined ||
+      payload.notifyStock === null ||
+      !payload.shareableUrl ||
+      !payload.productBackgroundColor ||
+      !payload.deliveryAddress ||
+      !payload.deliveryNote ||
+      !payload.redirectAfterPaymentLink ||
+      !payload.successMessage ||
+      !payload.sendNotification ||
+      payload.isActive === undefined ||
+      payload.isActive === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'productId', 'productName', 'productDescription', 'productPrice', 'quantityType', 'quantityStock', 'minOrder', 'maxOrder', 'lowStockAlert', 'notifyStock', 'shareableUrl', 'productBackgroundColor', 'deliveryAddress', 'deliveryNote', 'redirectAfterPaymentLink', 'successMessage', 'sendNotification', and 'isActive' are required."
+      );
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      productName: payload.productName,
+      productDescription: payload.productDescription,
+      productPrice: payload.productPrice,
+      quantityType: payload.quantityType,
+      quantityStock: payload.quantityStock,
+      minOrder: payload.minOrder,
+      maxOrder: payload.maxOrder,
+      lowStockAlert: payload.lowStockAlert,
+      notifyStock: payload.notifyStock,
+      shareableUrl: payload.shareableUrl,
+      productBackgroundColor: payload.productBackgroundColor,
+      deliveryAddress: payload.deliveryAddress,
+      deliveryNote: payload.deliveryNote,
+      redirectAfterPaymentLink: payload.redirectAfterPaymentLink,
+      successMessage: payload.successMessage,
+      sendNotification: payload.sendNotification,
+      isActive: payload.isActive,
+    };
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/products/update-product-details",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
