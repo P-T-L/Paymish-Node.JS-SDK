@@ -498,4 +498,83 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("productUploadMedia()", () => {
+    test("should successfully upload product media (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Media uploaded successfully",
+        data: { url: "https://example.com/media.jpg" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "123",
+        media: "mock-file-stream",
+      };
+
+      const result = await paymish.products.productUploadMedia(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/product-upload-media",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: expect.any(FormData),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if productId or media is missing", async () => {
+      await expect(
+        paymish.products.productUploadMedia({
+          productId: "123",
+        })
+      ).rejects.toThrow("Invalid payload: 'productId' and 'media' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when media upload fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid file format.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.productUploadMedia({
+          productId: "123",
+          media: "invalid-file",
+        });
+        throw new Error("Expected productUploadMedia to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid file format.");
+      }
+    });
+  });
 });

@@ -278,6 +278,44 @@ class Products {
       options
     );
   }
+
+  /**
+   * Uploads a media file for a product using multipart/form-data.
+   * POST /api/payment-service/external/v1/products/product-upload-media
+   *
+   * @param {Object|FormData} payload - Product upload media payload or FormData instance
+   * @param {string} [payload.productId] - The ID of the product
+   * @param {any} [payload.media] - The media file or stream to upload
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async productUploadMedia(payload, options = {}) {
+    let requestBody = payload;
+
+    if (!(payload instanceof FormData)) {
+      if (
+        !payload ||
+        payload.productId === undefined ||
+        payload.productId === null ||
+        payload.media === undefined ||
+        payload.media === null
+      ) {
+        throw new Error("Invalid payload: 'productId' and 'media' are required.");
+      }
+
+      const formData = new FormData();
+      formData.append("productId", String(payload.productId));
+      formData.append("media", payload.media);
+      requestBody = formData;
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/product-upload-media",
+      requestBody,
+      options
+    );
+  }
 }
 
 module.exports = Products;
