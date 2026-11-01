@@ -714,6 +714,40 @@ class Products {
       options
     );
   }
+
+  /**
+   * Checks whether a product slug already exists.
+   * POST /api/payment-service/external/v1/products/slugExist
+   *
+   * @param {Object|string} payload - Slug string or options object containing slug
+   * @param {string} [payload.slug] - The slug to check
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async slugExist(payload, options = {}) {
+    let slug;
+
+    if (payload !== null && typeof payload === "object") {
+      slug = payload.slug;
+    } else {
+      slug = payload;
+    }
+
+    if (slug === undefined || slug === null || slug === "") {
+      throw new Error("Invalid payload: 'slug' is required.");
+    }
+
+    const requestPayload = {
+      slug: String(slug),
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/slugExist",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
