@@ -10,6 +10,7 @@ const InitializeCheckout = require("./src/resources/initialize-checkout");
 const Invoices = require("./src/resources/invoices");
 const PaymentPages = require("./src/resources/payment-pages");
 const Plans = require("./src/resources/plans");
+const Products = require("./src/resources/products");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 const TransactionDisputes = require("./src/resources/transaction-disputes");
 
@@ -29,6 +30,7 @@ class Paymish {
     this.invoices = new Invoices(this.client);
     this.paymentPages = new PaymentPages(this.client);
     this.plans = new Plans(this.client);
+    this.products = new Products(this.client);
   }
 }
 
