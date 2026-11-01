@@ -1251,4 +1251,85 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("addDeliveryFees()", () => {
+    test("should successfully add delivery fees (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Delivery fees added successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "143",
+        location: "New York",
+        fees: "15.00",
+      };
+
+      const result = await paymish.products.addDeliveryFees(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/add-delivery-fees",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.addDeliveryFees({
+          productId: "143",
+        })
+      ).rejects.toThrow("Invalid payload: 'productId', 'location', and 'fees' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Product not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.addDeliveryFees({
+          productId: "999",
+          location: "New York",
+          fees: "15.00",
+        });
+        throw new Error("Expected addDeliveryFees to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Product not found.");
+      }
+    });
+  });
 });

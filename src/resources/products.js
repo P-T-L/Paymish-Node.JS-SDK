@@ -581,6 +581,36 @@ class Products {
       options
     );
   }
+
+  /**
+   * Adds delivery fees for a specific location to a product.
+   * POST /api/payment-service/external/v1/products/add-delivery-fees
+   *
+   * @param {Object} payload - Add delivery fees payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {string} payload.location - The location for which delivery fees are being added
+   * @param {string} payload.fees - The amount of delivery fees
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async addDeliveryFees(payload, options = {}) {
+    if (!payload || !payload.productId || !payload.location || !payload.fees) {
+      throw new Error("Invalid payload: 'productId', 'location', and 'fees' are required.");
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      location: payload.location,
+      fees: payload.fees,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/add-delivery-fees",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
