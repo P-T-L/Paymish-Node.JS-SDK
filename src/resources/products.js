@@ -155,6 +155,40 @@ class Products {
       options
     );
   }
+
+  /**
+   * Archives or unarchives an existing product.
+   * POST /api/payment-service/external/v1/products/archive-product
+   *
+   * @param {Object} payload - Archive product payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {boolean} payload.status - The product archive status action
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async archiveProduct(payload, options = {}) {
+    if (
+      !payload ||
+      payload.productId === undefined ||
+      payload.productId === null ||
+      payload.status === undefined ||
+      payload.status === null
+    ) {
+      throw new Error("Invalid payload: 'productId' and 'status' are required.");
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      status: payload.status,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/products/archive-product",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;

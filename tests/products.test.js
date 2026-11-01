@@ -304,4 +304,83 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("archiveProduct()", () => {
+    test("should successfully archive/unarchive product (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Product status updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "123",
+        status: true,
+      };
+
+      const result = await paymish.products.archiveProduct(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/archive-product",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if productId or status is missing", async () => {
+      await expect(
+        paymish.products.archiveProduct({
+          productId: "123",
+        })
+      ).rejects.toThrow("Invalid payload: 'productId' and 'status' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when archive fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Product not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.archiveProduct({
+          productId: "999",
+          status: true,
+        });
+        throw new Error("Expected archiveProduct to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Product not found.");
+      }
+    });
+  });
 });
