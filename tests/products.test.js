@@ -165,4 +165,64 @@ describe("Products Resource", () => {
       expect(result).toEqual(mockResponseBody);
     });
   });
+
+  describe("getProductDetails()", () => {
+    test("should successfully retrieve product details using productId (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Product details retrieved successfully",
+        data: { id: "123", productName: "Sample Product" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.products.getProductDetails("123");
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-product-details?productId=123",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing productId inside an options object", async () => {
+      const mockResponseBody = { status: "success", data: { id: "123" } };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.products.getProductDetails({ productId: "123" });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-product-details?productId=123",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if productId is missing", async () => {
+      await expect(paymish.products.getProductDetails()).rejects.toThrow(
+        "Invalid parameter: 'productId' is required to retrieve product details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
 });
