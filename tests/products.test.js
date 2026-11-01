@@ -1417,4 +1417,90 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("updateDeliveryFees()", () => {
+    test("should successfully update delivery fees (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Delivery fees updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        productId: "143",
+        deliveryFeesId: "22",
+        location: "Kaduna State",
+        fees: "25.00",
+      };
+
+      const result = await paymish.products.updateDeliveryFees(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/update-delivery-fees",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.products.updateDeliveryFees({
+          productId: "143",
+          deliveryFeesId: "22",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'productId', 'deliveryFeesId', 'location', and 'fees' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when update fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Delivery fee record not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.updateDeliveryFees({
+          productId: "143",
+          deliveryFeesId: "999",
+          location: "Kaduna State",
+          fees: "25.00",
+        });
+        throw new Error("Expected updateDeliveryFees to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Delivery fee record not found.");
+      }
+    });
+  });
 });

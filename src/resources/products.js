@@ -638,6 +638,46 @@ class Products {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates an existing delivery fee record for a product.
+   * PUT /api/payment-service/external/v1/products/update-delivery-fees
+   *
+   * @param {Object} payload - Update delivery fees payload
+   * @param {string} payload.productId - The ID of the product
+   * @param {string} payload.deliveryFeesId - The ID of the delivery fee record to update
+   * @param {string} payload.location - The location for which the delivery fees are being updated
+   * @param {string} payload.fees - The amount of delivery fees
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateDeliveryFees(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.productId ||
+      !payload.deliveryFeesId ||
+      !payload.location ||
+      !payload.fees
+    ) {
+      throw new Error(
+        "Invalid payload: 'productId', 'deliveryFeesId', 'location', and 'fees' are required."
+      );
+    }
+
+    const requestPayload = {
+      productId: payload.productId,
+      deliveryFeesId: payload.deliveryFeesId,
+      location: payload.location,
+      fees: payload.fees,
+    };
+
+    return this.client.request(
+      "PUT",
+      "/api/payment-service/external/v1/products/update-delivery-fees",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Products;
