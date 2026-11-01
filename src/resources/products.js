@@ -802,6 +802,41 @@ class Products {
       options
     );
   }
+
+  /**
+   * Retrieves discount codes based on optional query parameters like productId or code.
+   * GET /api/payment-service/external/v1/products/get-discount-codes
+   *
+   * @param {Object} [params] - Query parameters
+   * @param {string|number} [params.productId] - The product ID
+   * @param {string} [params.code] - The discount code
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getDiscountCodes(params = {}, options = {}) {
+    let queryParams = {};
+
+    if (params !== null && typeof params === "object") {
+      queryParams = params;
+    }
+
+    const searchParams = new URLSearchParams();
+    if (
+      queryParams.productId !== undefined &&
+      queryParams.productId !== null &&
+      queryParams.productId !== ""
+    ) {
+      searchParams.append("productId", String(queryParams.productId));
+    }
+    if (queryParams.code !== undefined && queryParams.code !== null && queryParams.code !== "") {
+      searchParams.append("code", String(queryParams.code));
+    }
+
+    const queryString = searchParams.toString();
+    const endpoint = `/api/payment-service/external/v1/products/get-discount-codes${queryString ? `?${queryString}` : ""}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Products;

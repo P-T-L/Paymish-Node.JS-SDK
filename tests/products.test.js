@@ -1763,4 +1763,84 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("getDiscountCodes()", () => {
+    test("should successfully retrieve discount codes with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Discount codes retrieved successfully",
+        data: [{ id: 1, code: "SUMMER20" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.products.getDiscountCodes({
+        productId: "123",
+        code: "SUMMER20",
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-discount-codes?productId=123&code=SUMMER20",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully retrieve discount codes without parameters", async () => {
+      const mockResponseBody = { status: "success", data: [] };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.products.getDiscountCodes();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-discount-codes",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw PaymishError when retrieval fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Discount codes not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.getDiscountCodes({ code: "INVALID" });
+        throw new Error("Expected getDiscountCodes to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Discount codes not found.");
+      }
+    });
+  });
 });
