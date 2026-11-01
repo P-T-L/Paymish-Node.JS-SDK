@@ -316,6 +316,33 @@ class Products {
       options
     );
   }
+
+  /**
+   * Retrieves media associated with a specific product.
+   * GET /api/payment-service/external/v1/products/get-product-media
+   *
+   * @param {Object|string|number} identifier - Product ID or options object containing productId or id
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getProductMedia(identifier, options = {}) {
+    let productId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      productId = identifier.productId !== undefined ? identifier.productId : identifier.id;
+    } else {
+      productId = identifier;
+    }
+
+    if (productId === undefined || productId === null || productId === "") {
+      throw new Error("Invalid parameter: 'productId' is required to retrieve product media.");
+    }
+
+    const searchParams = new URLSearchParams({ productId: String(productId) });
+    const endpoint = `/api/payment-service/external/v1/products/get-product-media?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Products;

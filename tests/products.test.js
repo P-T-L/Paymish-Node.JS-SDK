@@ -577,4 +577,89 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("getProductMedia()", () => {
+    test("should successfully retrieve product media using productId (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Product media retrieved successfully",
+        data: [{ id: 1, url: "https://example.com/media.jpg" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.products.getProductMedia("123");
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-product-media?productId=123",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing productId inside an options object", async () => {
+      const mockResponseBody = { status: "success", data: [] };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.products.getProductMedia({ productId: "123" });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/products/get-product-media?productId=123",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if productId is missing", async () => {
+      await expect(paymish.products.getProductMedia()).rejects.toThrow(
+        "Invalid parameter: 'productId' is required to retrieve product media."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when retrieval fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Product not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.products.getProductMedia("999");
+        throw new Error("Expected getProductMedia to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Product not found.");
+      }
+    });
+  });
 });
