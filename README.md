@@ -843,7 +843,7 @@ const transactionPages = await paymish.paymentPages.listPaymentPages({
 });
 ```
 
-#### createPaymentPageTransactionService(payload, [options])
+#### `createPaymentPageTransactionService(payload, [options])`
 
 Creates a payment page via the transaction service endpoint.
 
@@ -859,7 +859,7 @@ const txPage = await paymish.paymentPages.createPaymentPageTransactionService(
 
 ### Plans Resource (`paymish.plans`)
 
-#### createPlan(payload, [options])
+#### `createPlan(payload, [options])`
 
 Creates a new payment plan.
 
@@ -942,7 +942,7 @@ await paymish.plans.updatePlanDetails(
 );
 ```
 
-#### deletePlan(payload, [options])
+#### `deletePlan(payload, [options])`
 
 Deletes or updates the status of an existing payment plan.
 
@@ -961,7 +961,7 @@ await paymish.plans.deletePlan(
 );
 ```
 
-#### listPlansTransactionService([params], [options])
+#### `listPlansTransactionService([params], [options])`
 
 Retrieves a list of payment plans via the transaction service.
 
@@ -991,7 +991,7 @@ const txPlan = await paymish.plans.createPlanTransactionService(
 
 ### Products Resource (paymish.products)
 
-#### createProduct(payload, [options])
+#### `createProduct(payload, [options])`
 
 Creates a new product (supports multipart form-data for file uploads like product images).
 
@@ -1015,7 +1015,7 @@ const product = await paymish.products.createProduct(
 );
 ```
 
-#### getProducts([params], [options])
+#### `getProducts([params], [options])`
 
 Retrieves a paginated list of products.
 
@@ -1029,7 +1029,7 @@ const products = await paymish.products.getProducts(
 );
 ```
 
-#### getProductDetails(identifier, [options])
+#### `getProductDetails(identifier, [options])`
 
 Retrieves detailed information for a specific product.
 
@@ -1042,7 +1042,7 @@ const details = await paymish.products.getProductDetails("143", {
 });
 ```
 
-#### updateProduct(payload, [options])
+#### `updateProduct(payload, [options])`
 
 Updates details for an existing product.
 
@@ -1061,7 +1061,7 @@ await paymish.products.updateProduct(
 );
 ```
 
-#### updateProductStatus(payload, [options])
+#### `updateProductStatus(payload, [options])`
 
 Updates the active or published status of a product.
 
@@ -1077,7 +1077,7 @@ await paymish.products.updateProductStatus(
 );
 ```
 
-#### deleteProduct(payload, [options])
+#### `deleteProduct(payload, [options])`
 
 Deletes a product.
 
@@ -1090,7 +1090,7 @@ await paymish.products.deleteProduct("143", {
 });
 ```
 
-#### getDigitalDownloadFiles(identifier, [options])
+#### `getDigitalDownloadFiles(identifier, [options])`
 
 Retrieves digital download files associated with a specific product.
 
@@ -1103,7 +1103,7 @@ const files = await paymish.products.getDigitalDownloadFiles("143", {
 });
 ```
 
-#### renameDigitalDownloadFiles(payload, [options])
+#### `renameDigitalDownloadFiles(payload, [options])`
 
 Renames an existing digital download file associated with a product.
 
@@ -1124,7 +1124,7 @@ await paymish.products.renameDigitalDownloadFiles(
 );
 ```
 
-#### deleteDigitalDownloadFiles(payload, [options])
+#### `deleteDigitalDownloadFiles(payload, [options])`
 
 Deletes or updates the status of an existing digital download file.
 
@@ -1145,7 +1145,7 @@ await paymish.products.deleteDigitalDownloadFiles(
 );
 ```
 
-#### setDownloadLinkExpiry(payload, [options])
+#### `setDownloadLinkExpiry(payload, [options])`
 
 Sets the download link expiry configuration for a product.
 
@@ -1166,7 +1166,7 @@ await paymish.products.setDownloadLinkExpiry(
 );
 ```
 
-#### addDeliveryFees(payload, [options])
+#### `addDeliveryFees(payload, [options])`
 
 Adds delivery fees for a specific location to a product.
 
@@ -1187,7 +1187,7 @@ await paymish.products.addDeliveryFees(
 );
 ```
 
-#### getDeliveryFees(identifier, [options])
+#### `getDeliveryFees(identifier, [options])`
 
 Retrieves delivery fees for a specific product.
 
@@ -1200,7 +1200,7 @@ const fees = await paymish.products.getDeliveryFees("143", {
 });
 ```
 
-#### updateDeliveryFees(payload, [options])
+#### `updateDeliveryFees(payload, [options])`
 
 Updates an existing delivery fee record for a product.
 
@@ -1223,7 +1223,7 @@ await paymish.products.updateDeliveryFees(
 );
 ```
 
-#### deleteDeliveryFees(payload, [options])
+#### `deleteDeliveryFees(payload, [options])`
 
 Deletes or updates the status of an existing delivery fee record.
 
@@ -1244,7 +1244,7 @@ await paymish.products.deleteDeliveryFees(
 );
 ```
 
-#### slugExist(payload, [options])
+#### `slugExist(payload, [options])`
 
 Checks whether a product slug already exists.
 
@@ -1257,7 +1257,7 @@ const exists = await paymish.products.slugExist("my-product-slug", {
 });
 ```
 
-#### addDiscountCode(payload, [options])
+#### `addDiscountCode(payload, [options])`
 
 Creates a new discount code.
 
@@ -1281,7 +1281,7 @@ const discount = await paymish.products.addDiscountCode(
 );
 ```
 
-#### getDiscountCodes([params], [options])
+#### `getDiscountCodes([params], [options])`
 
 Retrieves discount codes based on optional query parameters like productId or code.
 
@@ -1297,7 +1297,7 @@ const codes = await paymish.products.getDiscountCodes(
 );
 ```
 
-#### updateDiscountCodeDetails([payload], [options])
+#### `updateDiscountCodeDetails([payload], [options])`
 
 Updates discount code details.
 
@@ -1311,7 +1311,7 @@ await paymish.products.updateDiscountCodeDetails(
 );
 ```
 
-#### verifyDiscountCode(payload, [options])
+#### `verifyDiscountCode(payload, [options])`
 
 Verifies a discount code, with an optional product ID query parameter.
 
