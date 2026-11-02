@@ -989,7 +989,7 @@ const txPlan = await paymish.plans.createPlanTransactionService(
 );
 ```
 
-### Products Resource (paymish.products)
+### Products Resource (`paymish.products`)
 
 #### `createProduct(payload, [options])`
 
