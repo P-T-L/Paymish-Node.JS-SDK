@@ -989,6 +989,347 @@ const txPlan = await paymish.plans.createPlanTransactionService(
 );
 ```
 
+### Products Resource (paymish.products)
+
+#### createProduct(payload, [options])
+
+Creates a new product (supports multipart form-data for file uploads like product images).
+
+- `payload (Object | FormData, Required)`
+  - `productName (string, Required)` — The name of the product.
+  - `productDescription (string, Required)` — Description of the product.
+  - `price (number | string, Required)` — Product price.
+  - `productType (string, Required)` — Type of product (e.g., `digital`, `physical`).
+  - Other product properties and media files.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const product = await paymish.products.createProduct(
+  {
+    productName: "E-Book Guide",
+    productDescription: "Learn web development from scratch",
+    price: "2500.00",
+    productType: "digital",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### getProducts([params], [options])
+
+Retrieves a paginated list of products.
+
+- `params (Object, Optional)` — Optional query parameters for filtering and pagination.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const products = await paymish.products.getProducts(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### getProductDetails(identifier, [options])
+
+Retrieves detailed information for a specific product.
+
+- `identifier (string | number | Object, Required)` — Product ID or options object containing `productId` or `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const details = await paymish.products.getProductDetails("143", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### updateProduct(payload, [options])
+
+Updates details for an existing product.
+
+- `payload (Object, Required)`
+  - `productId (string | number, Required)` — The ID of the product to update.
+  - Other updatable fields.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.updateProduct(
+  {
+    productId: "143",
+    productName: "Updated E-Book Title",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### updateProductStatus(payload, [options])
+
+Updates the active or published status of a product.
+
+- `payload (Object, Required)`
+  - `productId (string | number, Required)` — The ID of the product.
+  - `status (boolean | string, Required)` — Status value or action.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.updateProductStatus(
+  { productId: "143", status: true },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### deleteProduct(payload, [options])
+
+Deletes a product.
+
+- `payload (Object | string | number, Required)` — Product ID or payload containing product identifiers.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.deleteProduct("143", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### getDigitalDownloadFiles(identifier, [options])
+
+Retrieves digital download files associated with a specific product.
+
+- `identifier (string | number | Object, Required)` — Product ID or options object containing `productId` or `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const files = await paymish.products.getDigitalDownloadFiles("143", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### renameDigitalDownloadFiles(payload, [options])
+
+Renames an existing digital download file associated with a product.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `digitalDownloadFileId (string, Required)` — The ID of the digital download file to rename.
+  - `fileName (string, Required)` — The new name for the digital download file.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.renameDigitalDownloadFiles(
+  {
+    productId: "143",
+    digitalDownloadFileId: "29",
+    fileName: "new-file-name.png",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### deleteDigitalDownloadFiles(payload, [options])
+
+Deletes or updates the status of an existing digital download file.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `digitalDownloadFileId (string, Required)` — The ID of the digital download file.
+  - `status (boolean, Required)` — The status action.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.deleteDigitalDownloadFiles(
+  {
+    productId: "143",
+    digitalDownloadFileId: "29",
+    status: false,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### setDownloadLinkExpiry(payload, [options])
+
+Sets the download link expiry configuration for a product.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `isDownloadLinkExpiry (boolean, Required)` — Flag to indicate if download link expiry is enabled.
+  - `downloadLinkExpiryDuration (string, Required)` — The duration for which the download link will be active.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.setDownloadLinkExpiry(
+  {
+    productId: "143",
+    isDownloadLinkExpiry: true,
+    downloadLinkExpiryDuration: "30",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### addDeliveryFees(payload, [options])
+
+Adds delivery fees for a specific location to a product.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `location (string, Required)` — The location for which delivery fees are being added.
+  - `fees (string, Required)` — The amount of delivery fees.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.addDeliveryFees(
+  {
+    productId: "143",
+    location: "New York",
+    fees: "15.00",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### getDeliveryFees(identifier, [options])
+
+Retrieves delivery fees for a specific product.
+
+- `identifier (string | number | Object, Required)` — Product ID or options object containing `productId` or `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const fees = await paymish.products.getDeliveryFees("143", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### updateDeliveryFees(payload, [options])
+
+Updates an existing delivery fee record for a product.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `deliveryFeesId (string, Required)` — The ID of the delivery fee record to update.
+  - `location (string, Required)` — The location for which the delivery fees are being updated.
+  - `fees (string, Required)` — The amount of delivery fees.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.updateDeliveryFees(
+  {
+    productId: "143",
+    deliveryFeesId: "22",
+    location: "Kaduna State",
+    fees: "25.00",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### deleteDeliveryFees(payload, [options])
+
+Deletes or updates the status of an existing delivery fee record.
+
+- `payload (Object, Required)`
+  - `productId (string, Required)` — The ID of the product.
+  - `deliveryFeesId (string, Required)` — The ID of the delivery fee record.
+  - `status (boolean, Required)` — The status action.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.deleteDeliveryFees(
+  {
+    productId: "143",
+    deliveryFeesId: "22",
+    status: false,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### slugExist(payload, [options])
+
+Checks whether a product slug already exists.
+
+- `payload (Object | string, Required)` — Slug string or options object containing `slug`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const exists = await paymish.products.slugExist("my-product-slug", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### addDiscountCode(payload, [options])
+
+Creates a new discount code.
+
+- `payload (Object, Required)`
+  - `code (string, Required)` — The discount code.
+  - `value (number, Required)` — The discount value.
+  - `discounttype (string, Required)` — The type of discount (e.g. percentage, flat).
+  - `productId (number, Optional)` — Optional product ID.
+  - Other optional configuration rules (`minOrderAmount`, `maxUsePerCustomer`, `maxClaims`, `startDate`, `endDate`, `isActive`, `isDelete`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const discount = await paymish.products.addDiscountCode(
+  {
+    code: "SUMMER20",
+    value: 20,
+    discounttype: "percentage",
+    isActive: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### getDiscountCodes([params], [options])
+
+Retrieves discount codes based on optional query parameters like productId or code.
+
+- `params (Object, Optional)`
+  - `productId (string | number, Optional)` — Product ID filter.
+  - `code (string, Optional)` — Discount code filter.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const codes = await paymish.products.getDiscountCodes(
+  { productId: "123" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### updateDiscountCodeDetails([payload], [options])
+
+Updates discount code details.
+
+- `payload (Object, Optional)` — Update discount code payload details.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.products.updateDiscountCodeDetails(
+  { id: 1, value: 25 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### verifyDiscountCode(payload, [options])
+
+Verifies a discount code, with an optional product ID query parameter.
+
+- `payload (Object, Required)`
+  - `code (string, Required)` — The discount code to verify.
+  - `productId (string | number, Optional)` — Optional product ID.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const verification = await paymish.products.verifyDiscountCode(
+  {
+    productId: "123",
+    code: "SUMMER20",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
