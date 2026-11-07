@@ -87,6 +87,34 @@ class Recipients {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Deletes a transfer recipient by recipient ID.
+   * DELETE /api/transaction-service/external/v1/transfer/recipient
+   *
+   * @param {Object|string} identifier - Recipient ID string or options object containing recipientId
+   * @param {string} [identifier.recipientId] - ID of the recipient to be deleted
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteRecipient(identifier, options = {}) {
+    let recipientId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      recipientId = identifier.recipientId;
+    } else {
+      recipientId = identifier;
+    }
+
+    if (recipientId === undefined || recipientId === null || recipientId === "") {
+      throw new Error("Invalid parameter: 'recipientId' is required to delete a recipient.");
+    }
+
+    const searchParams = new URLSearchParams({ recipientId: String(recipientId) });
+    const endpoint = `/api/transaction-service/external/v1/transfer/recipient?${searchParams.toString()}`;
+
+    return this.client.request("DELETE", endpoint, null, options);
+  }
 }
 
 module.exports = Recipients;

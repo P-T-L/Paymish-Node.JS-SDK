@@ -175,4 +175,88 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("deleteRecipient()", () => {
+    test("should successfully delete a recipient using recipientId string (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Recipient deleted successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.recipients.deleteRecipient("rec_12345");
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/recipient?recipientId=rec_12345",
+        expect.objectContaining({
+          method: "DELETE",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing recipientId inside an options object", async () => {
+      const mockResponseBody = { status: "success", message: "Deleted" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.recipients.deleteRecipient({ recipientId: "rec_12345" });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/recipient?recipientId=rec_12345",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if recipientId is missing", async () => {
+      await expect(paymish.recipients.deleteRecipient()).rejects.toThrow(
+        "Invalid parameter: 'recipientId' is required to delete a recipient."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when deletion fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Recipient not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.recipients.deleteRecipient("rec_99999");
+        throw new Error("Expected deleteRecipient to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Recipient not found.");
+      }
+    });
+  });
 });
