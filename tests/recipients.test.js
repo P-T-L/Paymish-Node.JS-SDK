@@ -259,4 +259,83 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("blacklistRecipient()", () => {
+    test("should successfully blacklist a recipient (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Recipient blacklist status updated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        recipientId: 1,
+        isBlackListed: true,
+      };
+
+      const result = await paymish.recipients.blacklistRecipient(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/blacklist-recipient",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if recipientId or isBlackListed is missing", async () => {
+      await expect(
+        paymish.recipients.blacklistRecipient({
+          recipientId: 1,
+        })
+      ).rejects.toThrow("Invalid payload: 'recipientId' and 'isBlackListed' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Recipient not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.recipients.blacklistRecipient({
+          recipientId: 999,
+          isBlackListed: true,
+        });
+        throw new Error("Expected blacklistRecipient to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Recipient not found.");
+      }
+    });
+  });
 });

@@ -115,6 +115,40 @@ class Recipients {
 
     return this.client.request("DELETE", endpoint, null, options);
   }
+
+  /**
+   * Blacklists or unblacklists a transfer recipient.
+   * POST /api/transaction-service/external/v1/transfer/blacklist-recipient
+   *
+   * @param {Object} payload - Blacklist recipient payload
+   * @param {number|string} payload.recipientId - ID of the recipient to be blacklisted
+   * @param {boolean} payload.isBlackListed - Flag to indicate if the recipient should be blacklisted
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async blacklistRecipient(payload, options = {}) {
+    if (
+      !payload ||
+      payload.recipientId === undefined ||
+      payload.recipientId === null ||
+      payload.isBlackListed === undefined ||
+      payload.isBlackListed === null
+    ) {
+      throw new Error("Invalid payload: 'recipientId' and 'isBlackListed' are required.");
+    }
+
+    const requestPayload = {
+      recipientId: payload.recipientId,
+      isBlackListed: payload.isBlackListed,
+    };
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transfer/blacklist-recipient",
+      requestPayload,
+      options
+    );
+  }
 }
 
 module.exports = Recipients;
