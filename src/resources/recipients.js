@@ -57,6 +57,36 @@ class Recipients {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves details for a specific recipient by recipient code.
+   * GET /api/transaction-service/external/v1/transfer/get-recipient-details
+   *
+   * @param {Object|string} identifier - Recipient code string or object containing recipientCode
+   * @param {string} [identifier.recipientCode] - Code of the recipient to retrieve details for
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getRecipientDetails(identifier, options = {}) {
+    let recipientCode;
+
+    if (identifier !== null && typeof identifier === "object") {
+      recipientCode = identifier.recipientCode;
+    } else {
+      recipientCode = identifier;
+    }
+
+    if (recipientCode === undefined || recipientCode === null || recipientCode === "") {
+      throw new Error(
+        "Invalid parameter: 'recipientCode' is required to retrieve recipient details."
+      );
+    }
+
+    const searchParams = new URLSearchParams({ recipientCode: String(recipientCode) });
+    const endpoint = `/api/transaction-service/external/v1/transfer/get-recipient-details?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Recipients;

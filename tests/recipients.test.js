@@ -90,4 +90,89 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("getRecipientDetails()", () => {
+    test("should successfully retrieve recipient details using recipientCode string (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Recipient details retrieved successfully",
+        data: { recipientCode: "RCP_12345", accountName: "John Doe" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.recipients.getRecipientDetails("RCP_12345");
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/get-recipient-details?recipientCode=RCP_12345",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing recipientCode inside an options object", async () => {
+      const mockResponseBody = { status: "success", data: {} };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.recipients.getRecipientDetails({ recipientCode: "RCP_12345" });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/get-recipient-details?recipientCode=RCP_12345",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if recipientCode is missing", async () => {
+      await expect(paymish.recipients.getRecipientDetails()).rejects.toThrow(
+        "Invalid parameter: 'recipientCode' is required to retrieve recipient details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when retrieval fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Recipient not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.recipients.getRecipientDetails("RCP_99999");
+        throw new Error("Expected getRecipientDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Recipient not found.");
+      }
+    });
+  });
 });
