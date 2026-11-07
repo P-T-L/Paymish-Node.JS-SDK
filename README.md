@@ -1401,6 +1401,54 @@ await paymish.recipients.blacklistRecipient(
 );
 ```
 
+### Settlements Resource (`paymish.settlements`)
+
+#### `listSettlements([params], [options])`
+
+Retrieves a list of settlements with optional filtering and pagination.
+
+- `params (Object, Optional)`
+  - `page (integer, Optional)` — Page number for pagination.
+  - `limit (integer, Optional)` — Number of results to return per page.
+  - `status (string, Optional)` — Settlement status (e.g., `Paid`, `Unpaid`).
+  - `from (string, Optional)` — Settlement date on or after this day (`YYYY-MM-DD`).
+  - `to (string, Optional)` — Settlement date on or before this day (`YYYY-MM-DD`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const settlements = await paymish.settlements.listSettlements(
+  {
+    page: 1,
+    limit: 10,
+    status: "Paid",
+    from: "2026-01-01",
+    to: "2026-10-31",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `listSettlementTransactions(reference, [params], [options])`
+
+Retrieves a list of transactions associated with a specific settlement reference.
+
+- `reference (string | Object, Required)` — The settlement reference string (e.g., `PAY_xxx`) or an options object containing `reference`.
+- `params (Object, Optional)`
+  - `page (integer, Optional)` — Page number for pagination.
+  - `limit (integer, Optional)` — Number of results to return per page.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transactions = await paymish.settlements.listSettlementTransactions(
+  "PAY_12345",
+  {
+    page: 1,
+    limit: 10,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
