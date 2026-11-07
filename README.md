@@ -1330,6 +1330,77 @@ const verification = await paymish.products.verifyDiscountCode(
 );
 ```
 
+### Recipients Resource (`paymish.recipients`)
+
+#### `getRecipientList(params, [options])`
+
+Retrieves a paginated list of transfer recipients for a business.
+
+- `params (Object, Required)`
+  - `businessId (string, Required)` — The unique identifier for the business.
+  - `limit (integer, Required)` — Number of results to return per page.
+  - `page (integer, Required)` — Current page number for pagination.
+  - `status (boolean, Optional)` — Filter by recipient status (`true` for active, `false` for inactive).
+  - `searchRecipientAccountName (string, Optional)` — Search filter for recipient account name.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const recipients = await paymish.recipients.getRecipientList(
+  {
+    businessId: "biz_123",
+    limit: 10,
+    page: 1,
+    status: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getRecipientDetails(identifier, [options])`
+
+Retrieves details for a specific recipient by recipient code.
+
+- `identifier (string | Object, Required)` — Recipient code string or an options object containing recipientCode.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const recipient = await paymish.recipients.getRecipientDetails("RCP_12345", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `deleteRecipient(identifier, [options])`
+
+Deletes a transfer recipient by recipient ID.
+
+- `identifier (string | Object, Required)` — Recipient ID string or an options object containing recipientId.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.recipients.deleteRecipient("rec_12345", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `blacklistRecipient(payload, [options])`
+
+Blacklists or unblacklists a transfer recipient.
+
+- `payload (Object, Required)`
+  - `recipientId (number | string, Required)` — ID of the recipient to be blacklisted.
+  - `isBlackListed (boolean, Required)` — Flag to indicate if the recipient should be blacklisted.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.recipients.blacklistRecipient(
+  {
+    recipientId: 1,
+    isBlackListed: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
