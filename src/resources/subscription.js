@@ -89,6 +89,35 @@ class Subscription {
       options
     );
   }
+
+  /**
+   * Retrieves a subscription by its unique ID.
+   * GET /api/payment-service/external/v1/subscription/{id}
+   *
+   * @param {number|string|Object} identifier - Subscription ID or options object containing id
+   * @param {number|string} [identifier.id] - The ID of the subscription to retrieve
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getSubscriptionById(identifier, options = {}) {
+    let subscriptionId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      subscriptionId = identifier.id;
+    } else {
+      subscriptionId = identifier;
+    }
+
+    if (subscriptionId === undefined || subscriptionId === null || subscriptionId === "") {
+      throw new Error("Invalid parameter: 'id' is required to retrieve a subscription.");
+    }
+
+    const endpoint = `/api/payment-service/external/v1/subscription/${encodeURIComponent(
+      subscriptionId
+    )}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Subscription;
