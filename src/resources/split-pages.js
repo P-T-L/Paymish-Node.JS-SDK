@@ -229,6 +229,60 @@ class SplitPages {
 
     return this.client.request("DELETE", endpoint, null, options);
   }
+
+  /**
+   * Adds a subaccount to an existing split page.
+   * POST /api/transaction-service/external/v1/split-page/{id}/subaccount/add
+   *
+   * @param {number|string|Object} identifier - Split page ID or options object containing id
+   * @param {number|string} [identifier.id] - The id of the split page
+   * @param {Object} payload - Subaccount addition payload
+   * @param {number} payload.share - Share of the subaccount (required)
+   * @param {string} payload.sub_account_id - Subaccount code (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async addSubaccountToSplitPage(identifier, payload, options = {}) {
+    let splitPageId;
+    let requestPayload = payload;
+    let reqOptions = options;
+
+    if (identifier !== null && typeof identifier === "object" && identifier.id !== undefined) {
+      splitPageId = identifier.id;
+    } else if (typeof identifier === "number" || typeof identifier === "string") {
+      splitPageId = identifier;
+    } else if (identifier !== null && typeof identifier === "object" && payload === undefined) {
+      splitPageId = identifier.id;
+      requestPayload = identifier;
+    }
+
+    if (splitPageId === undefined || splitPageId === null || splitPageId === "") {
+      throw new Error("Invalid parameter: 'id' is required to add a subaccount to a split page.");
+    }
+
+    if (
+      !requestPayload ||
+      requestPayload.share === undefined ||
+      requestPayload.share === null ||
+      !requestPayload.sub_account_id
+    ) {
+      throw new Error("Invalid payload: 'share' and 'sub_account_id' are required.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/split-page/${encodeURIComponent(
+      splitPageId
+    )}/subaccount/add`;
+
+    return this.client.request(
+      "POST",
+      endpoint,
+      {
+        share: requestPayload.share,
+        sub_account_id: requestPayload.sub_account_id,
+      },
+      reqOptions
+    );
+  }
 }
 
 module.exports = SplitPages;
