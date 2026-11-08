@@ -101,4 +101,87 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("getAllSplitPages()", () => {
+    test("should successfully retrieve all split pages with required and optional query params (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Split pages retrieved successfully",
+        data: [{ id: 55, name: "fdhfdh" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        page: 1,
+        limit: 10,
+        sort: "createdAt:desc",
+        searchString: "fdh",
+        status: true,
+        splitType: "percentage",
+      };
+
+      const result = await paymish.splitPages.getAllSplitPages(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/split-page/all?page=1&limit=10&sort=createdAt%3Adesc&searchString=fdh&status=true&splitType=percentage",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required parameters (page, limit, sort) are missing", async () => {
+      await expect(
+        paymish.splitPages.getAllSplitPages({
+          page: 1,
+          limit: 10,
+        })
+      ).rejects.toThrow(
+        "Invalid parameters: 'page', 'limit', and 'sort' are required to retrieve split pages."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid query parameters.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.splitPages.getAllSplitPages({
+          page: 1,
+          limit: 10,
+          sort: "createdAt:desc",
+        });
+        throw new Error("Expected getAllSplitPages to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid query parameters.");
+      }
+    });
+  });
 });

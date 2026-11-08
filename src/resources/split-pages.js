@@ -71,6 +71,65 @@ class SplitPages {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of all split pages with optional filters.
+   * GET /api/transaction-service/external/v1/split-page/all
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.page - The page number to retrieve (required)
+   * @param {number} params.limit - The number of items per page (required)
+   * @param {string} params.sort - Sorting criteria (required)
+   * @param {string} [params.searchString] - A search string to filter results
+   * @param {boolean} [params.status] - Filter by status (active/inactive)
+   * @param {string} [params.splitType] - The type of split (e.g., percentage, fixed)
+   * @param {boolean} [params.category] - Filter by category
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getAllSplitPages(params = {}, options = {}) {
+    if (
+      !params ||
+      params.page === undefined ||
+      params.page === null ||
+      params.limit === undefined ||
+      params.limit === null ||
+      params.sort === undefined ||
+      params.sort === null ||
+      params.sort === ""
+    ) {
+      throw new Error(
+        "Invalid parameters: 'page', 'limit', and 'sort' are required to retrieve split pages."
+      );
+    }
+
+    const searchParams = new URLSearchParams({
+      page: String(params.page),
+      limit: String(params.limit),
+      sort: String(params.sort),
+    });
+
+    if (
+      params.searchString !== undefined &&
+      params.searchString !== null &&
+      params.searchString !== ""
+    ) {
+      searchParams.append("searchString", String(params.searchString));
+    }
+    if (params.status !== undefined && params.status !== null) {
+      searchParams.append("status", String(params.status));
+    }
+    if (params.splitType !== undefined && params.splitType !== null && params.splitType !== "") {
+      searchParams.append("splitType", String(params.splitType));
+    }
+    if (params.category !== undefined && params.category !== null) {
+      searchParams.append("category", String(params.category));
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/split-page/all?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = SplitPages;
