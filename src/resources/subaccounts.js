@@ -96,6 +96,35 @@ class Subaccounts {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves a subaccount by its unique identifier.
+   * GET /api/transaction-service/external/v1/subaccounts/{id}
+   *
+   * @param {number|string|Object} identifier - Subaccount ID or options object containing id
+   * @param {number|string} [identifier.id] - Unique identifier of the subaccount
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getSubaccountById(identifier, options = {}) {
+    let subaccountId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      subaccountId = identifier.id;
+    } else {
+      subaccountId = identifier;
+    }
+
+    if (subaccountId === undefined || subaccountId === null || subaccountId === "") {
+      throw new Error("Invalid parameter: 'id' is required to retrieve a subaccount.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/subaccounts/${encodeURIComponent(
+      subaccountId
+    )}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Subaccounts;

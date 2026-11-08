@@ -182,4 +182,89 @@ describe("Subaccounts Resource", () => {
       }
     });
   });
+
+  describe("getSubaccountById()", () => {
+    test("should successfully retrieve a subaccount by id (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Subaccount retrieved successfully",
+        data: { id: 1, business_name: "dfsdhjfgdsjfd" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.subaccounts.getSubaccountById(1);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/subaccounts/1",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing id inside an options object", async () => {
+      const mockResponseBody = { status: "success", data: {} };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.subaccounts.getSubaccountById({ id: 1 });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/subaccounts/1",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if id is missing", async () => {
+      await expect(paymish.subaccounts.getSubaccountById()).rejects.toThrow(
+        "Invalid parameter: 'id' is required to retrieve a subaccount."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Subaccount not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.subaccounts.getSubaccountById(999);
+        throw new Error("Expected getSubaccountById to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Subaccount not found.");
+      }
+    });
+  });
 });
