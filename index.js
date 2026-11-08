@@ -14,6 +14,7 @@ const Products = require("./src/resources/products");
 const Recipients = require("./src/resources/recipients");
 const Settlements = require("./src/resources/settlements");
 const SplitPages = require("./src/resources/split-pages");
+const Subaccounts = require("./src/resources/subaccounts");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 const TransactionDisputes = require("./src/resources/transaction-disputes");
 
@@ -37,6 +38,7 @@ class Paymish {
     this.recipients = new Recipients(this.client);
     this.settlements = new Settlements(this.client);
     this.splitPages = new SplitPages(this.client);
+    this.subaccounts = new Subaccounts(this.client);
   }
 }
 
