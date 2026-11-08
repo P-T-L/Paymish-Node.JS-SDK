@@ -125,6 +125,54 @@ class Subaccounts {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates an existing subaccount by ID.
+   * PUT /api/transaction-service/external/v1/subaccounts/{id}
+   *
+   * @param {number|string|Object} identifier - Subaccount ID or options object containing id
+   * @param {number|string} [identifier.id] - Unique identifier of the subaccount
+   * @param {Object} payload - Update payload containing fields to update
+   * @param {string} [payload.business_name] - Name of the business associated with the subaccount
+   * @param {string} [payload.account_number] - Account number of the subaccount
+   * @param {number} [payload.percentage_charge] - Percentage charge for the subaccount
+   * @param {string} [payload.currency] - Currency code for the subaccount (e.g., NGN)
+   * @param {number} [payload.bank] - Code representing the bank associated with the subaccount
+   * @param {string} [payload.account_name] - Account name of the subaccount
+   * @param {boolean} [payload.active] - Indicates if the subaccount is active
+   * @param {boolean} [payload.migrate] - Indicates if the subaccount is eligible for migration
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateSubaccount(identifier, payload, options = {}) {
+    let subaccountId;
+    let requestPayload = payload;
+    let reqOptions = options;
+
+    if (identifier !== null && typeof identifier === "object" && identifier.id !== undefined) {
+      subaccountId = identifier.id;
+    } else if (typeof identifier === "number" || typeof identifier === "string") {
+      subaccountId = identifier;
+    } else if (identifier !== null && typeof identifier === "object" && payload === undefined) {
+      // Handle case where single object containing id and payload properties is passed
+      subaccountId = identifier.id;
+      requestPayload = identifier;
+    }
+
+    if (subaccountId === undefined || subaccountId === null || subaccountId === "") {
+      throw new Error("Invalid parameter: 'id' is required to update a subaccount.");
+    }
+
+    if (!requestPayload || typeof requestPayload !== "object") {
+      throw new Error("Invalid payload: Update payload is required.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/subaccounts/${encodeURIComponent(
+      subaccountId
+    )}`;
+
+    return this.client.request("PUT", endpoint, requestPayload, reqOptions);
+  }
 }
 
 module.exports = Subaccounts;

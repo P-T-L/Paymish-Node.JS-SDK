@@ -267,4 +267,75 @@ describe("Subaccounts Resource", () => {
       }
     });
   });
+
+  describe("updateSubaccount()", () => {
+    test("should successfully update a subaccount by id (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Subaccount updated successfully",
+        data: { id: 1, business_name: "dfsdhjfgdsjfd", percentage_charge: 2 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = { percentage_charge: 2, active: true };
+      const result = await paymish.subaccounts.updateSubaccount(1, payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/subaccounts/1",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if id is missing", async () => {
+      await expect(
+        paymish.subaccounts.updateSubaccount(null, { percentage_charge: 2 })
+      ).rejects.toThrow("Invalid parameter: 'id' is required to update a subaccount.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid update details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.subaccounts.updateSubaccount(1, { percentage_charge: -5 });
+        throw new Error("Expected updateSubaccount to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid update details.");
+      }
+    });
+  });
 });
