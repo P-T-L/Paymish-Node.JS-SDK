@@ -517,4 +517,99 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("updateSubaccountInSplitPage()", () => {
+    test("should successfully update a subaccount in a split page (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Subaccount updated successfully",
+        data: { sub_account_id: "ACCT_123", share: 40 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        share: 40,
+        sub_account_id: "ACCT_123",
+      };
+
+      const result = await paymish.splitPages.updateSubaccountInSplitPage(55, payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/split-page/55/subaccount/update",
+        expect.objectContaining({
+          method: "PUT",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if id is missing", async () => {
+      await expect(
+        paymish.splitPages.updateSubaccountInSplitPage(null, {
+          share: 40,
+          sub_account_id: "ACCT_123",
+        })
+      ).rejects.toThrow(
+        "Invalid parameter: 'id' is required to update a subaccount in a split page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw early validation error if share or sub_account_id is missing", async () => {
+      await expect(
+        paymish.splitPages.updateSubaccountInSplitPage(55, {
+          share: 40,
+        })
+      ).rejects.toThrow("Invalid payload: 'share' and 'sub_account_id' are required.");
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Subaccount not found in split page.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.splitPages.updateSubaccountInSplitPage(55, {
+          share: 40,
+          sub_account_id: "NONEXISTENT",
+        });
+        throw new Error(
+          "Expected updateSubaccountInSplitPage to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Subaccount not found in split page.");
+      }
+    });
+  });
 });
