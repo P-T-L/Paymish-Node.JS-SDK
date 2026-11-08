@@ -118,6 +118,45 @@ class Subscription {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates an existing subscription by ID.
+   * PUT /api/payment-service/external/v1/subscription/{id}
+   *
+   * @param {number|string|Object} identifier - Subscription ID or options object containing id
+   * @param {number|string} [identifier.id] - The ID of the subscription to update
+   * @param {Object} payload - Update payload containing fields to update
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateSubscription(identifier, payload, options = {}) {
+    let subscriptionId;
+    let requestPayload = payload;
+    let reqOptions = options;
+
+    if (identifier !== null && typeof identifier === "object" && identifier.id !== undefined) {
+      subscriptionId = identifier.id;
+    } else if (typeof identifier === "number" || typeof identifier === "string") {
+      subscriptionId = identifier;
+    } else if (identifier !== null && typeof identifier === "object" && payload === undefined) {
+      subscriptionId = identifier.id;
+      requestPayload = identifier;
+    }
+
+    if (subscriptionId === undefined || subscriptionId === null || subscriptionId === "") {
+      throw new Error("Invalid parameter: 'id' is required to update a subscription.");
+    }
+
+    if (!requestPayload || typeof requestPayload !== "object") {
+      throw new Error("Invalid payload: Update payload is required.");
+    }
+
+    const endpoint = `/api/payment-service/external/v1/subscription/${encodeURIComponent(
+      subscriptionId
+    )}`;
+
+    return this.client.request("PUT", endpoint, requestPayload, reqOptions);
+  }
 }
 
 module.exports = Subscription;
