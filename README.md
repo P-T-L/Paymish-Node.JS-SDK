@@ -1449,6 +1449,165 @@ const transactions = await paymish.settlements.listSettlementTransactions(
 );
 ```
 
+### SplitPages Resource (`paymish.splitPages`)
+
+#### `createSplitPage(payload, [options])`
+
+Creates a new split page.
+
+- `payload (Object, Required)`
+  - `name (string, Required)` — Name of the split page.
+  - `type (string, Required)` — The type of split (e.g., `percentage`, `fixed`).
+  - `currency (string, Required)` — Currency code for the split (e.g., `NGN`).
+  - `integration (integer, Required)` — Integration identifier for the split.
+  - `domain (string, Required)` — Domain associated with the split page.
+  - `active (boolean, Required)` — Indicates if the split page is active.
+  - `bearer_type (string, Optional)` — Type of bearer associated with the split.
+  - `bearer_subaccount (string, Optional)` — Subaccount associated with the bearer.
+  - `createdAt (string, Optional)` — Date and time when the split page was created.
+  - `updatedAt (string, Optional)` — Date and time when the split page was last updated.
+  - `is_dynamic (boolean, Optional)` — Indicates if the split is dynamic.
+  - `subaccounts (Array<Object>, Optional)` — Array of subaccounts.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const splitPage = await paymish.splitPages.createSplitPage(
+  {
+    name: "fdhfdh",
+    type: "percentage",
+    currency: "NGN",
+    integration: 12345,
+    domain: "test",
+    active: true,
+    is_dynamic: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getAllSplitPages(params, [options])`
+
+Retrieves a paginated list of all split pages with optional filters.
+
+- `params (Object, Required)`
+  - `page (integer, Required)` — The page number to retrieve.
+  - `limit (integer, Required)` — The number of items per page.
+  - `sort (string, Required)` — Sorting criteria (e.g., `createdAt:desc`).
+  - `searchString (string, Optional)` — A search string to filter results.
+  - `status (boolean, Optional)` — Filter by status (`true` for active, `false` for inactive).
+  - `splitType (string, Optional)` — The type of split (e.g., `percentage`, `fixed`).
+  - `category (boolean, Optional)` — Filter by category.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const splitPages = await paymish.splitPages.getAllSplitPages(
+  {
+    page: 1,
+    limit: 10,
+    sort: "createdAt:desc",
+    status: true,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getSplitPageById(identifier, [options])`
+
+Retrieves a split page by its unique identifier.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const splitPage = await paymish.splitPages.getSplitPageById(55, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updateSplitPage(identifier, payload, [options])`
+
+Updates an existing split page by ID.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing `id`.
+- `payload (Object, Required)` — Update payload containing fields to update (e.g., `{ name: "hi2" }`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const updated = await paymish.splitPages.updateSplitPage(
+  55,
+  { name: "hi2" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deleteSplitPage(identifier, [options])`
+
+Deletes a split page by its ID.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.splitPages.deleteSplitPage(55, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `addSubaccountToSplitPage(identifier, payload, [options])`
+
+Adds a subaccount to an existing split page.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing `id`.
+- `payload (Object, Required)`
+  - `share (integer, Required)` — Share of the subaccount.
+  - `sub_account_id (string, Required)` — Subaccount code.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.splitPages.addSubaccountToSplitPage(
+  55,
+  {
+    share: 30,
+    sub_account_id: "ACCT_123",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `updateSubaccountInSplitPage(identifier, payload, [options])`
+
+Updates a subaccount in an existing split page.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing `id`.
+- `payload (Object, Required)`
+  - `share (integer, Required)` — Share of the subaccount.
+  - `sub_account_id (string, Required)` — Subaccount code.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.splitPages.updateSubaccountInSplitPage(
+  55,
+  {
+    share: 40,
+    sub_account_id: "ACCT_123",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deleteSubaccountFromSplitPage(identifier, [options])`
+
+Removes a subaccount from a split page.
+
+- `identifier (number | string | Object, Required)` — Split page ID or an options object containing id.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.splitPages.deleteSubaccountFromSplitPage(55, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
 ---
 
 ## Error Handling
