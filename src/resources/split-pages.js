@@ -130,6 +130,35 @@ class SplitPages {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves a split page by its unique identifier.
+   * GET /api/transaction-service/external/v1/split-page/{id}
+   *
+   * @param {number|string|Object} identifier - Split page ID or options object containing id
+   * @param {number|string} [identifier.id] - The split page id
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getSplitPageById(identifier, options = {}) {
+    let splitPageId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      splitPageId = identifier.id;
+    } else {
+      splitPageId = identifier;
+    }
+
+    if (splitPageId === undefined || splitPageId === null || splitPageId === "") {
+      throw new Error("Invalid parameter: 'id' is required to retrieve a split page.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/split-page/${encodeURIComponent(
+      splitPageId
+    )}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = SplitPages;
