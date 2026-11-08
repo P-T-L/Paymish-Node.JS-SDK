@@ -173,6 +173,35 @@ class Subaccounts {
 
     return this.client.request("PUT", endpoint, requestPayload, reqOptions);
   }
+
+  /**
+   * Deletes a subaccount by its unique identifier.
+   * DELETE /api/transaction-service/external/v1/subaccounts/{id}
+   *
+   * @param {number|string|Object} identifier - Subaccount ID or options object containing id
+   * @param {number|string} [identifier.id] - Unique identifier of the subaccount to be deleted
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteSubaccount(identifier, options = {}) {
+    let subaccountId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      subaccountId = identifier.id;
+    } else {
+      subaccountId = identifier;
+    }
+
+    if (subaccountId === undefined || subaccountId === null || subaccountId === "") {
+      throw new Error("Invalid parameter: 'id' is required to delete a subaccount.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/subaccounts/${encodeURIComponent(
+      subaccountId
+    )}`;
+
+    return this.client.request("DELETE", endpoint, null, options);
+  }
 }
 
 module.exports = Subaccounts;
