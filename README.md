@@ -1703,6 +1703,114 @@ await paymish.subaccounts.deleteSubaccount(1, {
 });
 ```
 
+### Subscription Resource (`paymish.subscription`)
+
+#### `getAllSubscriptions(params, [options])`
+
+Retrieves a paginated list of all subscriptions with optional query filters.
+
+- `params (Object, Optional)`
+  - `page (integer, Optional)` — Page number for pagination.
+  - `limit (integer, Optional)` — Number of records per page.
+  - `name (string, Optional)` — Filter subscriptions by name.
+  - `status (string, Optional)` — Filter subscriptions by status (e.g., `active`, `expired`).
+  - `amount (number, Optional)` — Filter subscriptions by amount.
+  - `expiry_start (string, Optional)` — Filter subscriptions expiring after a specific date.
+  - `expiry_end (string, Optional)` — Filter subscriptions expiring before a specific date.
+  - `sort (string, Optional)` — Sort subscriptions by a specific field (e.g., `createdAt`).
+  - `order (string, Optional)` — Sort order (`asc` for ascending, `desc` for descending).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subscriptions = await paymish.subscription.getAllSubscriptions(
+  {
+    page: 1,
+    limit: 10,
+    status: "active",
+    sort: "createdAt",
+    order: "desc",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `createSubscription(payload, [options])`
+
+Creates a new subscription.
+
+- `payload (Object, Required)`
+  - `planId (number, Required)` — The ID of the subscription plan.
+  - `planName (string, Required)` — The name of the subscription plan.
+  - `customerId (string, Required)` — The ID of the customer subscribing.
+  - `amount (number, Required)` — The amount charged for the subscription.
+  - `nextPaymentDate (string, Required)` — The date of the next payment.
+  - `startDate (string, Required)` — The start date of the subscription.
+  - `subscriptionCode (string, Required)` — A unique code for the subscription.
+  - `paymentCount (integer, Required)` — The number of payments made so far.
+  - `interval (string, Required)` — The interval of payments (e.g., `monthly`, `yearly`).
+  - `status (string, Required)` — The status of the subscription (e.g., `active`, `canceled`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subscription = await paymish.subscription.createSubscription(
+  {
+    planId: 10,
+    planName: "Gold Plan",
+    customerId: "CUST_123",
+    amount: 5000,
+    nextPaymentDate: "2026-12-01",
+    startDate: "2026-11-01",
+    subscriptionCode: "SUB_123",
+    paymentCount: 1,
+    interval: "monthly",
+    status: "active",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getSubscriptionById(identifier, [options])`
+
+Retrieves a subscription by its unique ID.
+
+- `identifier (number | string | Object, Required)` — Subscription ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subscription = await paymish.subscription.getSubscriptionById(1, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updateSubscription(identifier, payload, [options])`
+
+Updates an existing subscription by ID.
+
+- `identifier (number | string | Object, Required)` — Subscription ID or an options object containing id.
+- `payload (Object, Required)` — Update payload containing fields to update (e.g., { status: "canceled" }).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const updated = await paymish.subscription.updateSubscription(
+  1,
+  { status: "canceled" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deleteSubscription(identifier, [options])`
+
+Deletes a subscription by its unique ID.
+
+- `identifier (number | string | Object, Required)` — Subscription ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.subscription.deleteSubscription(1, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
 ---
 
 ## Error Handling
