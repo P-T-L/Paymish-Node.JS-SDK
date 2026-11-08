@@ -340,4 +340,88 @@ describe("Products Resource", () => {
       }
     });
   });
+
+  describe("deleteSplitPage()", () => {
+    test("should successfully delete a split page by id (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Split page deleted successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.splitPages.deleteSplitPage(55);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/split-page/55",
+        expect.objectContaining({
+          method: "DELETE",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing id inside an options object", async () => {
+      const mockResponseBody = { status: "success", message: "Deleted" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.splitPages.deleteSplitPage({ id: 55 });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/split-page/55",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if id is missing", async () => {
+      await expect(paymish.splitPages.deleteSplitPage()).rejects.toThrow(
+        "Invalid parameter: 'id' is required to delete a split page."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when deletion fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Split page not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.splitPages.deleteSplitPage(999);
+        throw new Error("Expected deleteSplitPage to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Split page not found.");
+      }
+    });
+  });
 });

@@ -200,6 +200,35 @@ class SplitPages {
 
     return this.client.request("PUT", endpoint, requestPayload, reqOptions);
   }
+
+  /**
+   * Deletes a split page by its ID.
+   * DELETE /api/transaction-service/external/v1/split-page/{id}
+   *
+   * @param {number|string|Object} identifier - Split page ID or options object containing id
+   * @param {number|string} [identifier.id] - The split page ID
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteSplitPage(identifier, options = {}) {
+    let splitPageId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      splitPageId = identifier.id;
+    } else {
+      splitPageId = identifier;
+    }
+
+    if (splitPageId === undefined || splitPageId === null || splitPageId === "") {
+      throw new Error("Invalid parameter: 'id' is required to delete a split page.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/split-page/${encodeURIComponent(
+      splitPageId
+    )}`;
+
+    return this.client.request("DELETE", endpoint, null, options);
+  }
 }
 
 module.exports = SplitPages;
