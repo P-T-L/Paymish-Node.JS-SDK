@@ -1608,6 +1608,101 @@ await paymish.splitPages.deleteSubaccountFromSplitPage(55, {
 });
 ```
 
+### Subaccounts Resource (`paymish.subaccounts`)
+
+#### `createSubaccount(payload, [options])`
+
+Creates a new subaccount.
+
+- `payload (Object, Required)`
+  - `business_name (string, Required)` — Name of the business associated with the subaccount.
+  - `account_number (string, Required)` — Account number of the subaccount.
+  - `percentage_charge (integer, Required)` — Percentage charge for the subaccount.
+  - `currency (string, Required)` — Currency code for the subaccount (e.g., `NGN`).
+  - `bank (integer, Required)` — Code representing the bank associated with the subaccount.
+  - `account_name (string, Required)` — Account name of the subaccount.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subaccount = await paymish.subaccounts.createSubaccount(
+  {
+    business_name: "dfsdhjfgdsjfd",
+    account_number: "1234567890",
+    percentage_charge: 10,
+    currency: "NGN",
+    bank: 999004,
+    account_name: "new",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getAllSubaccounts(params, [options])`
+
+Retrieves a paginated list of all subaccounts with required and optional filters.
+
+- `params (Object, Required)`
+  - `page (integer, Required)` — The page number to retrieve.
+  - `limit (integer, Required)` — The number of items per page.
+  - `sort (string, Required)` — Sorting criteria (e.g., `ASC`, `DESC`).
+  - `sortKey (string, Required)` — The key/field to sort by (e.g., `createdAt`).
+  - `searchString (string, Optional)` — A search string to filter results.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subaccounts = await paymish.subaccounts.getAllSubaccounts(
+  {
+    page: 1,
+    limit: 10,
+    sort: "DESC",
+    sortKey: "createdAt",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getSubaccountById(identifier, [options])`
+
+Retrieves a subaccount by its unique identifier.
+
+- `identifier (number | string | Object, Required)` — Subaccount ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const subaccount = await paymish.subaccounts.getSubaccountById(1, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updateSubaccount(identifier, payload, [options])`
+
+Updates an existing subaccount by ID.
+
+- `identifier (number | string | Object, Required)` — Subaccount ID or an options object containing `id`.
+- `payload (Object, Required)` — Update payload containing fields to update (e.g., `{ percentage_charge: 2, active: true }`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const updated = await paymish.subaccounts.updateSubaccount(
+  1,
+  { percentage_charge: 2, active: true },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `deleteSubaccount(identifier, [options])`
+
+Deletes a subaccount by its unique identifier.
+
+- `identifier (number | string | Object, Required)` — Subaccount ID or an options object containing `id`.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+await paymish.subaccounts.deleteSubaccount(1, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
 ---
 
 ## Error Handling
