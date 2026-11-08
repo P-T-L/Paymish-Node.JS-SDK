@@ -159,6 +159,47 @@ class SplitPages {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Updates an existing split page by ID.
+   * PUT /api/transaction-service/external/v1/split-page/{id}
+   *
+   * @param {number|string|Object} identifier - Split page ID or options object containing id
+   * @param {number|string} [identifier.id] - The split page ID
+   * @param {Object} payload - Update payload containing fields to update (e.g. name)
+   * @param {string} [payload.name] - Name of the split page
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async updateSplitPage(identifier, payload, options = {}) {
+    let splitPageId;
+    let requestPayload = payload;
+    let reqOptions = options;
+
+    if (identifier !== null && typeof identifier === "object" && identifier.id !== undefined) {
+      splitPageId = identifier.id;
+    } else if (typeof identifier === "number" || typeof identifier === "string") {
+      splitPageId = identifier;
+    } else if (identifier !== null && typeof identifier === "object" && payload === undefined) {
+      // Handle case where single object containing id and payload properties is passed
+      splitPageId = identifier.id;
+      requestPayload = identifier;
+    }
+
+    if (splitPageId === undefined || splitPageId === null || splitPageId === "") {
+      throw new Error("Invalid parameter: 'id' is required to update a split page.");
+    }
+
+    if (!requestPayload || typeof requestPayload !== "object") {
+      throw new Error("Invalid payload: Update payload is required.");
+    }
+
+    const endpoint = `/api/transaction-service/external/v1/split-page/${encodeURIComponent(
+      splitPageId
+    )}`;
+
+    return this.client.request("PUT", endpoint, requestPayload, reqOptions);
+  }
 }
 
 module.exports = SplitPages;
