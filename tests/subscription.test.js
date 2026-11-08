@@ -358,4 +358,88 @@ describe("Subscription Resource", () => {
       }
     });
   });
+
+  describe("deleteSubscription()", () => {
+    test("should successfully delete a subscription by id (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Subscription deleted successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.subscription.deleteSubscription(1);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/subscription/1",
+        expect.objectContaining({
+          method: "DELETE",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should support passing id inside an options object", async () => {
+      const mockResponseBody = { status: "success", message: "Deleted" };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      await paymish.subscription.deleteSubscription({ id: 1 });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/subscription/1",
+        expect.any(Object)
+      );
+    });
+
+    test("should throw early validation error if id is missing", async () => {
+      await expect(paymish.subscription.deleteSubscription()).rejects.toThrow(
+        "Invalid parameter: 'id' is required to delete a subscription."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Subscription not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.subscription.deleteSubscription(999);
+        throw new Error("Expected deleteSubscription to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Subscription not found.");
+      }
+    });
+  });
 });

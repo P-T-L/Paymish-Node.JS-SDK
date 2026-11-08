@@ -157,6 +157,35 @@ class Subscription {
 
     return this.client.request("PUT", endpoint, requestPayload, reqOptions);
   }
+
+  /**
+   * Deletes a subscription by its unique ID.
+   * DELETE /api/payment-service/external/v1/subscription/{id}
+   *
+   * @param {number|string|Object} identifier - Subscription ID or options object containing id
+   * @param {number|string} [identifier.id] - The ID of the subscription to delete
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async deleteSubscription(identifier, options = {}) {
+    let subscriptionId;
+
+    if (identifier !== null && typeof identifier === "object") {
+      subscriptionId = identifier.id;
+    } else {
+      subscriptionId = identifier;
+    }
+
+    if (subscriptionId === undefined || subscriptionId === null || subscriptionId === "") {
+      throw new Error("Invalid parameter: 'id' is required to delete a subscription.");
+    }
+
+    const endpoint = `/api/payment-service/external/v1/subscription/${encodeURIComponent(
+      subscriptionId
+    )}`;
+
+    return this.client.request("DELETE", endpoint, null, options);
+  }
 }
 
 module.exports = Subscription;
