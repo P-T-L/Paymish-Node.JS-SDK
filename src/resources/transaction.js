@@ -398,6 +398,51 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of refunds with required and optional query filters.
+   * GET /api/transaction-service/external/v1/refund-list
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.businessId - Business ID (required)
+   * @param {number} params.limit - Limit of records to return (required)
+   * @param {number} params.page - Current page number (required)
+   * @param {string} [params.status] - Refund status
+   * @param {number} [params.amount] - Amount
+   * @param {string} [params.filterAmount] - Filter amount modifier (gt, lt, eq)
+   * @param {string} [params.from] - From date (e.g. 2021-10-12T07:24:02.110Z)
+   * @param {string} [params.refundRefId] - Refund ID or reference
+   * @param {string} [params.to] - To date (e.g. 2021-10-12T07:24:02.110Z)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getRefundList(params = {}, options = {}) {
+    if (
+      !params ||
+      params.businessId === undefined ||
+      params.businessId === null ||
+      params.limit === undefined ||
+      params.limit === null ||
+      params.page === undefined ||
+      params.page === null
+    ) {
+      throw new Error(
+        "Invalid parameters: 'businessId', 'limit', and 'page' are required to retrieve the refund list."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/refund-list?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;
