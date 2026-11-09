@@ -443,6 +443,42 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves refund details using a business ID and either a transaction reference or a refund ID.
+   * GET /api/transaction-service/external/v1/refund-details
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.businessId - Business ID (required)
+   * @param {string} [params.reference] - Transaction reference
+   * @param {string} [params.refundId] - Refund ID
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getRefundDetails(params = {}, options = {}) {
+    if (
+      !params ||
+      params.businessId === undefined ||
+      params.businessId === null ||
+      (!params.reference && !params.refundId)
+    ) {
+      throw new Error(
+        "Invalid parameters: 'businessId' and either 'reference' or 'refundId' are required to retrieve refund details."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/refund-details?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;

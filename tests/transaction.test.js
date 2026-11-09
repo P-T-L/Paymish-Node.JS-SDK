@@ -957,4 +957,112 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("getRefundDetails()", () => {
+    test("should successfully retrieve refund details using businessId and reference (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Refund details retrieved successfully",
+        data: { refundRefId: "RFD_12345", status: "completed" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        businessId: 100,
+        reference: "TXN_waTjNBitbamwNnLuavU1xd",
+      };
+
+      const result = await paymish.transaction.getRefundDetails(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/refund-details?businessId=100&reference=TXN_waTjNBitbamwNnLuavU1xd",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully retrieve refund details using businessId and refundId (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Refund details retrieved successfully",
+        data: { refundRefId: "RFD_12345" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        businessId: 100,
+        refundId: "RFD_12345",
+      };
+
+      const result = await paymish.transaction.getRefundDetails(params);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/refund-details?businessId=100&refundId=RFD_12345",
+        expect.any(Object)
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if businessId is missing or both reference and refundId are missing", async () => {
+      await expect(
+        paymish.transaction.getRefundDetails({
+          businessId: 100,
+        })
+      ).rejects.toThrow(
+        "Invalid parameters: 'businessId' and either 'reference' or 'refundId' are required to retrieve refund details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Refund not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.getRefundDetails({
+          businessId: 100,
+          refundId: "INVALID_RFD",
+        });
+        throw new Error("Expected getRefundDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Refund not found.");
+      }
+    });
+  });
 });
