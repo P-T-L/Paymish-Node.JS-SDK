@@ -1311,4 +1311,82 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("getScheduledTransactions()", () => {
+    test("should successfully retrieve scheduled transactions with scheduleId and isLive (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Scheduled transactions retrieved successfully",
+        data: [{ scheduleId: "sch_123", amount: 5000 }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        scheduleId: "sch_123",
+        isLive: "true",
+      };
+
+      const result = await paymish.transaction.getScheduledTransactions(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/scheduled-transactions?scheduleId=sch_123&isLive=true",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if scheduleId is missing", async () => {
+      await expect(
+        paymish.transaction.getScheduledTransactions({
+          isLive: "true",
+        })
+      ).rejects.toThrow(
+        "Invalid parameters: 'scheduleId' is required to retrieve scheduled transactions."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid schedule ID.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.getScheduledTransactions({
+          scheduleId: "invalid_sch",
+        });
+        throw new Error(
+          "Expected getScheduledTransactions to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid schedule ID.");
+      }
+    });
+  });
 });

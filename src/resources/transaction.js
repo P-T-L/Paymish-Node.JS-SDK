@@ -567,6 +567,36 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves scheduled transactions.
+   * GET /api/transaction-service/external/v1/scheduled-transactions
+   *
+   * @param {Object} params - Query parameters
+   * @param {string} params.scheduleId - Schedule ID (required)
+   * @param {string|boolean} [params.isLive] - is Live mode true/false
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getScheduledTransactions(params = {}, options = {}) {
+    if (!params || !params.scheduleId) {
+      throw new Error(
+        "Invalid parameters: 'scheduleId' is required to retrieve scheduled transactions."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/scheduled-transactions?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;
