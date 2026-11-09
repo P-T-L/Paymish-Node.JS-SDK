@@ -51,6 +51,61 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Initiates a transaction with a card.
+   * POST /api/transaction-service/external/v1/transaction-with-card
+   *
+   * @param {Object} payload - Transaction with card payload
+   * @param {number} payload.businessId - Unique identifier for the business (required)
+   * @param {number} payload.customerId - Unique identifier for the customer (required)
+   * @param {number} payload.planId - Unique identifier for the plan (required)
+   * @param {string} payload.channel - The channel through which the transaction is made (required)
+   * @param {number} payload.amount - Amount of the transaction (required)
+   * @param {number} payload.cardNumber - Card number used for the transaction (required)
+   * @param {number} payload.expiryYear - Expiry year of the card (required)
+   * @param {number} payload.expiryMonth - Expiry month of the card (required)
+   * @param {number} payload.cvv - CVV of the card (required)
+   * @param {string} [payload.ipAddress] - IP address of the customer making the transaction
+   * @param {number} [payload.fees] - Fees associated with the transaction
+   * @param {string} [payload.message] - Additional message or information related to the transaction
+   * @param {boolean} [payload.isLive] - Indicates if the transaction is in a live environment
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async transactionWithCard(payload, options = {}) {
+    if (
+      !payload ||
+      payload.businessId === undefined ||
+      payload.businessId === null ||
+      payload.customerId === undefined ||
+      payload.customerId === null ||
+      payload.planId === undefined ||
+      payload.planId === null ||
+      !payload.channel ||
+      payload.amount === undefined ||
+      payload.amount === null ||
+      payload.cardNumber === undefined ||
+      payload.cardNumber === null ||
+      payload.expiryYear === undefined ||
+      payload.expiryYear === null ||
+      payload.expiryMonth === undefined ||
+      payload.expiryMonth === null ||
+      payload.cvv === undefined ||
+      payload.cvv === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'businessId', 'customerId', 'planId', 'channel', 'amount', 'cardNumber', 'expiryYear', 'expiryMonth', and 'cvv' are required."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transaction-with-card",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
