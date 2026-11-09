@@ -274,6 +274,32 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Verifies bank details (account number and destination institution code).
+   * POST /api/transaction-service/external/v1/bank-verify
+   *
+   * @param {Object} payload - Bank verification payload
+   * @param {string} payload.DestinationInstitutionCode - Institution code of the destination bank (required)
+   * @param {string} payload.AccountNumber - Account number to verify (required)
+   * @param {boolean} [payload.isLive] - Flag indicating if the verification is live
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async verifyBankDetails(payload, options = {}) {
+    if (!payload || !payload.DestinationInstitutionCode || !payload.AccountNumber) {
+      throw new Error(
+        "Invalid payload: 'DestinationInstitutionCode' and 'AccountNumber' are required to verify bank details."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/bank-verify",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;

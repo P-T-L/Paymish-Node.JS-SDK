@@ -546,4 +546,87 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("verifyBankDetails()", () => {
+    test("should successfully verify bank details (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Account verified successfully",
+        data: { accountName: "John Doe", accountNumber: "0051762787" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        DestinationInstitutionCode: "999998",
+        AccountNumber: "0051762787",
+        isLive: false,
+      };
+
+      const result = await paymish.transaction.verifyBankDetails(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/bank-verify",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required fields are missing", async () => {
+      await expect(
+        paymish.transaction.verifyBankDetails({
+          AccountNumber: "0051762787",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'DestinationInstitutionCode' and 'AccountNumber' are required to verify bank details."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Account resolution failed.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.verifyBankDetails({
+          DestinationInstitutionCode: "999998",
+          AccountNumber: "0000000000",
+        });
+        throw new Error("Expected verifyBankDetails to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Account resolution failed.");
+      }
+    });
+  });
 });
