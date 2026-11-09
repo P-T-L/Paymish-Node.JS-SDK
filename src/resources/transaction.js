@@ -106,6 +106,52 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Creates a transaction with NDD (Direct Debit).
+   * POST /api/transaction-service/external/v1/transaction-with-ndd
+   *
+   * @param {Object} payload - Transaction with NDD payload
+   * @param {number} payload.businessId - ID of the business (required)
+   * @param {number} payload.customerId - ID of the customer (required)
+   * @param {number} payload.planId - ID of the plan (required)
+   * @param {string} payload.channel - Channel of the transaction (required)
+   * @param {number} payload.amount - Amount of the transaction (required)
+   * @param {Object} payload.ndd - NDD details object (required)
+   * @param {string} [payload.ipAddress] - IP address of the transaction
+   * @param {number} [payload.fees] - Fees associated with the transaction
+   * @param {string} [payload.message] - Message associated with the transaction
+   * @param {boolean} [payload.isLive] - Flag indicating if the transaction is live
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async transactionWithNdd(payload, options = {}) {
+    if (
+      !payload ||
+      payload.businessId === undefined ||
+      payload.businessId === null ||
+      payload.customerId === undefined ||
+      payload.customerId === null ||
+      payload.planId === undefined ||
+      payload.planId === null ||
+      !payload.channel ||
+      payload.amount === undefined ||
+      payload.amount === null ||
+      !payload.ndd ||
+      typeof payload.ndd !== "object"
+    ) {
+      throw new Error(
+        "Invalid payload: 'businessId', 'customerId', 'planId', 'channel', 'amount', and 'ndd' are required."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transaction-with-ndd",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
