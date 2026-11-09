@@ -629,4 +629,91 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("transactionWithUssd()", () => {
+    test("should successfully create a transaction with USSD (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "USSD transaction initiated successfully",
+        data: { reference: "TRX_USSD_123" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        businessId: 18,
+        customerId: 8,
+        channel: "USSD",
+        amount: 100,
+        message: "message",
+      };
+
+      const result = await paymish.transaction.transactionWithUssd(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transaction-with-ussd",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required USSD transaction fields are missing", async () => {
+      await expect(
+        paymish.transaction.transactionWithUssd({
+          businessId: 18,
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'businessId', 'customerId', 'channel', and 'amount' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid USSD request details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.transactionWithUssd({
+          businessId: 18,
+          customerId: 8,
+          channel: "USSD",
+          amount: 100,
+        });
+        throw new Error("Expected transactionWithUssd to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid USSD request details.");
+      }
+    });
+  });
 });
