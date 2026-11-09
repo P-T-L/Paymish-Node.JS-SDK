@@ -514,6 +514,31 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Verifies an account (e.g. for card refund or account resolution).
+   * POST /api/transaction-service/external/v1/verify-account
+   *
+   * @param {Object} payload - Verify account payload
+   * @param {string} payload.bankCode - Bank code (required)
+   * @param {string} payload.accountNumber - Account number (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async verifyAccount(payload, options = {}) {
+    if (!payload || !payload.bankCode || !payload.accountNumber) {
+      throw new Error(
+        "Invalid payload: 'bankCode' and 'accountNumber' are required to verify an account."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/verify-account",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
