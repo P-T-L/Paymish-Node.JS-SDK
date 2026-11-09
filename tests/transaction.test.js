@@ -456,4 +456,94 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("transactionWithBank()", () => {
+    test("should successfully create a transaction with bank (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Bank transaction initiated successfully",
+        data: { reference: "TRX_BANK_123" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        businessId: 18,
+        customerId: 8,
+        channel: "NIBSS",
+        amount: 100,
+        AccountNumber: "1780004070",
+        DestinationInstitutionCode: "999998",
+      };
+
+      const result = await paymish.transaction.transactionWithBank(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transaction-with-bank",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required bank transaction fields are missing", async () => {
+      await expect(
+        paymish.transaction.transactionWithBank({
+          businessId: 18,
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'businessId', 'customerId', 'channel', 'amount', 'AccountNumber', and 'DestinationInstitutionCode' are required."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid bank account details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.transactionWithBank({
+          businessId: 18,
+          customerId: 8,
+          channel: "NIBSS",
+          amount: 100,
+          AccountNumber: "1780004070",
+          DestinationInstitutionCode: "999998",
+        });
+        throw new Error("Expected transactionWithBank to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid bank account details.");
+      }
+    });
+  });
 });

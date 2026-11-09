@@ -227,6 +227,53 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Creates a transaction with a bank.
+   * POST /api/transaction-service/external/v1/transaction-with-bank
+   *
+   * @param {Object} payload - Transaction with bank payload
+   * @param {number} payload.businessId - ID of the business (required)
+   * @param {number} payload.customerId - ID of the customer (required)
+   * @param {string} payload.channel - Channel of the transaction (required)
+   * @param {number} payload.amount - Amount of the transaction (required)
+   * @param {string} payload.AccountNumber - Account number for the transaction (required)
+   * @param {string} payload.DestinationInstitutionCode - Institution code of the destination bank (required)
+   * @param {number} [payload.pageId] - ID of the page
+   * @param {number} [payload.orderId] - ID of the order
+   * @param {string} [payload.ipAddress] - IP address associated with the transaction
+   * @param {number} [payload.fees] - Fees associated with the transaction
+   * @param {string} [payload.message] - Message associated with the transaction
+   * @param {string} [payload.location] - Location coordinates
+   * @param {boolean} [payload.isLive] - Flag indicating if the transaction is live
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async transactionWithBank(payload, options = {}) {
+    if (
+      !payload ||
+      payload.businessId === undefined ||
+      payload.businessId === null ||
+      payload.customerId === undefined ||
+      payload.customerId === null ||
+      !payload.channel ||
+      payload.amount === undefined ||
+      payload.amount === null ||
+      !payload.AccountNumber ||
+      !payload.DestinationInstitutionCode
+    ) {
+      throw new Error(
+        "Invalid payload: 'businessId', 'customerId', 'channel', 'amount', 'AccountNumber', and 'DestinationInstitutionCode' are required."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transaction-with-bank",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
