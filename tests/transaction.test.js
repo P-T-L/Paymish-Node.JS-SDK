@@ -1065,4 +1065,81 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("getRefundByReference()", () => {
+    test("should successfully retrieve refund details by reference (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Refund details retrieved successfully",
+        data: { reference: "REF_98765", amount: 100 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        businessId: 100,
+        reference: "REF_98765",
+      };
+
+      const result = await paymish.transaction.getRefundByReference(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/refund-by-reference?businessId=100&reference=REF_98765",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if businessId or reference is missing", async () => {
+      await expect(
+        paymish.transaction.getRefundByReference({
+          businessId: 100,
+        })
+      ).rejects.toThrow(
+        "Invalid parameters: 'businessId' and 'reference' are required to retrieve refund details by reference."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Refund reference not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.getRefundByReference({
+          businessId: 100,
+          reference: "INVALID_REF",
+        });
+        throw new Error("Expected getRefundByReference to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Refund reference not found.");
+      }
+    });
+  });
 });

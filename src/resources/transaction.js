@@ -479,6 +479,41 @@ class Transaction {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves refund details by business ID and refund reference.
+   * GET /api/transaction-service/external/v1/refund-by-reference
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.businessId - Business ID (required)
+   * @param {string} params.reference - Refund reference (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getRefundByReference(params = {}, options = {}) {
+    if (
+      !params ||
+      params.businessId === undefined ||
+      params.businessId === null ||
+      !params.reference
+    ) {
+      throw new Error(
+        "Invalid parameters: 'businessId' and 'reference' are required to retrieve refund details by reference."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/refund-by-reference?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;
