@@ -152,6 +152,53 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Initiates a transaction with a QR code.
+   * POST /api/transaction-service/external/v1/transaction-with-qr
+   *
+   * @param {Object} payload - Transaction with QR payload
+   * @param {number} payload.businessId - Unique identifier for the business (required)
+   * @param {number} payload.customerId - Unique identifier for the customer (required)
+   * @param {number} payload.planId - Unique identifier for the plan (required)
+   * @param {string} payload.channel - The channel through which the transaction is made (required)
+   * @param {number} payload.amount - Amount of the transaction (required)
+   * @param {string} payload.mch_no - Merchant number (required)
+   * @param {string} payload.sub_mch_no - Sub-merchant number (required)
+   * @param {string} [payload.ipAddress] - IP address of the customer making the transaction
+   * @param {number} [payload.fees] - Fees associated with the transaction
+   * @param {string} [payload.message] - Additional message or information related to the transaction
+   * @param {boolean} [payload.isLive] - Indicates if the transaction is in a live environment
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async transactionWithQr(payload, options = {}) {
+    if (
+      !payload ||
+      payload.businessId === undefined ||
+      payload.businessId === null ||
+      payload.customerId === undefined ||
+      payload.customerId === null ||
+      payload.planId === undefined ||
+      payload.planId === null ||
+      !payload.channel ||
+      payload.amount === undefined ||
+      payload.amount === null ||
+      !payload.mch_no ||
+      !payload.sub_mch_no
+    ) {
+      throw new Error(
+        "Invalid payload: 'businessId', 'customerId', 'planId', 'channel', 'amount', 'mch_no', and 'sub_mch_no' are required."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transaction-with-qr",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
