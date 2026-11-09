@@ -1811,6 +1811,423 @@ await paymish.subscription.deleteSubscription(1, {
 });
 ```
 
+### Transaction Resource (`paymish.transaction`)
+
+#### `getAllTransactions(params, [options])`
+
+Retrieves a paginated list of all transactions with optional query filters.
+
+- `params (Object, Optional)`
+  - `page (integer, Optional)` — Page number for pagination.
+  - `limit (integer, Optional)` — Number of records per page.
+  - `status (string, Optional)` — Filter transactions by status.
+  - `reference (string, Optional)` — Filter by transaction reference.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transactions = await paymish.transaction.getAllTransactions(
+  {
+    page: 1,
+    limit: 10,
+    status: "success",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getTransactionByReference(params, [options])`
+
+Retrieves details of a specific transaction by its reference.
+
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — Business ID.
+  - `reference (string, Required)` — Transaction reference.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.getTransactionByReference(
+  {
+    businessId: 8,
+    reference: "TXN_12345",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getTransactionDetails(params, [options])`
+
+Retrieves transaction details using a business ID and reference or ID.
+
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — Business ID.
+  - `reference (string, Optional)` — Transaction reference.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const details = await paymish.transaction.getTransactionDetails(
+  {
+    businessId: 8,
+    reference: "TXN_12345",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `transactionWithCard(payload, [options])`
+
+Creates a transaction using a card payment channel.
+
+- `payload (Object, Required)`
+  - `businessId (integer, Required)` — ID of the business.
+  - `customerId (integer, Required)` — ID of the customer.
+  - `amount (number, Required)` — Amount of the transaction.
+  - `cardNumber (string, Required)` — Card number.
+  - `expiryMonth (string, Required)` — Card expiry month.
+  - `expiryYear (string, Required)` — Card expiry year.
+  - `cvv (string, Required)` — Card CVV.
+  - `channel (string, Optional)` — Channel of the transaction (e.g., `card`).
+  - `ipAddress (string, Optional)` — IP address of the transaction.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.transactionWithCard(
+  {
+    businessId: 8,
+    customerId: 165,
+    amount: 152,
+    cardNumber: "4111111111111111",
+    expiryMonth: "12",
+    expiryYear: "28",
+    cvv: "123",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `transactionWithNdd(payload, [options])`
+
+Creates a transaction with NDD (Direct Debit).
+
+- `payload (Object, Required)`
+  - `businessId (integer, Required)` — ID of the business.
+  - `customerId (integer, Required)` — ID of the customer.
+  - `planId (integer, Required)` — ID of the plan.
+  - `channel (string, Required)` — Channel of the transaction.
+  - `amount (number, Required)` — Amount of the transaction.
+  - `ndd (Object, Required)` — NDD details object.
+  - `ipAddress (string, Optional)` — IP address of the transaction.
+  - `fees (number, Optional)` — Fees associated with the transaction.
+  - `message (string, Optional)` — Message associated with the transaction.
+  - `isLive (boolean, Optional)` — Flag indicating if the transaction is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.transactionWithNdd(
+  {
+    businessId: 8,
+    customerId: 165,
+    planId: 10,
+    channel: "NDD",
+    amount: 152,
+    ndd: { mandateId: "MND_123" },
+    message: "Test message",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `transactionWithQr(payload, [options])`
+
+Initiates a transaction with a QR code.
+
+- `payload (Object, Required)`
+  - `businessId (integer, Required)` — Unique identifier for the business.
+  - `customerId (integer, Required)` — Unique identifier for the customer.
+  - `planId (integer, Required)` — Unique identifier for the plan.
+  - `channel (string, Required)` — The channel through which the transaction is made.
+  - `amount (number, Required)` — Amount of the transaction.
+  - `mch_no (string, Required)` — Merchant number.
+  - `sub_mch_no (string, Required)` — Sub-merchant number.
+  - `ipAddress (string, Optional)` — IP address of the customer.
+  - `fees (number, Optional)` — Fees associated with the transaction.
+  - `message (string, Optional)` — Additional message or information.
+  - `isLive (boolean, Optional)` — Indicates if the transaction is in a live environment.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.transactionWithQr(
+  {
+    businessId: 8,
+    customerId: 165,
+    planId: 10,
+    channel: "NQR",
+    amount: 152,
+    mch_no: "M0000005463",
+    sub_mch_no: "S0000007263",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getBankList(params, [options])`
+
+Retrieves the list of banks.
+
+- `params (Object, Optional)`
+  - `isLive (boolean, Optional)` — Flag to indicate if the environment is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const banks = await paymish.transaction.getBankList(
+  { isLive: true },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `transactionWithBank(payload, [options])`
+
+Creates a transaction with a bank.
+
+- `payload (Object, Required)`
+  - `businessId (integer, Required)` — ID of the business.
+  - `customerId (integer, Required)` — ID of the customer.
+  - `channel (string, Required)` — Channel of the transaction.
+  - `amount (number, Required)` — Amount of the transaction.
+  - `AccountNumber (string, Required)` — Account number for the transaction.
+  - `DestinationInstitutionCode (string, Required)` — Institution code of the destination bank.
+  - `pageId (integer, Optional)` — ID of the page.
+  - `orderId (integer, Optional)` — ID of the order.
+  - `ipAddress (string, Optional)` — IP address associated with the transaction.
+  - `fees (number, Optional)` — Fees associated with the transaction.
+  - `message (string, Optional)` — Message associated with the transaction.
+  - `location (string, Optional)` — Location coordinates.
+  - `isLive (boolean, Optional)` — Flag indicating if the transaction is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.transactionWithBank(
+  {
+    businessId: 18,
+    customerId: 8,
+    channel: "NIBSS",
+    amount: 100,
+    AccountNumber: "1780004070",
+    DestinationInstitutionCode: "999998",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `verifyBankDetails(payload, [options])`
+
+Verifies bank details (account number and destination institution code).
+
+- `payload (Object, Required)`
+  - `DestinationInstitutionCode (string, Required)` — Institution code of the destination bank.
+  - `AccountNumber (string, Required)` — Account number to verify.
+  - `isLive (boolean, Optional)` — Flag indicating if the verification is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const verification = await paymish.transaction.verifyBankDetails(
+  {
+    DestinationInstitutionCode: "999998",
+    AccountNumber: "0051762787",
+    isLive: false,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `transactionWithUssd(payload, [options])`
+
+Creates a transaction with USSD.
+
+- `payload (Object, Required)`
+  - `businessId (integer, Required)` — ID of the business.
+  - `customerId (integer, Required)` — ID of the customer.
+  - `channel (string, Required)` — Channel of the transaction.
+  - `amount (number, Required)` — Amount of the transaction.
+  - `pageId (integer, Optional)` — ID of the page.
+  - `orderId (integer, Optional)` — ID of the order.
+  - `ipAddress (string, Optional)` — IP address associated with the transaction.
+  - `fees (number, Optional)` — Fees associated with the transaction.
+  - `message (string, Optional)` — Message associated with the transaction.
+  - `location (string, Optional)` — Location coordinates.
+  - `isLive (boolean, Optional)` — Flag indicating if the transaction is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transaction = await paymish.transaction.transactionWithUssd(
+  {
+    businessId: 18,
+    customerId: 8,
+    channel: "USSD",
+    amount: 100,
+    message: "message",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `verifyUssdTransaction(payload, [options])`
+
+Verifies a transaction initiated with USSD.
+
+- `payload (Object, Required)`
+  - `ussdTransactionId (string, Required)` — The USSD transaction ID to verify.
+  - `isLive (boolean, Optional)` — Flag indicating if the verification is live.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const verification = await paymish.transaction.verifyUssdTransaction(
+  {
+    ussdTransactionId: "24091010410290301050",
+    isLive: false,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `refundTransaction(payload, [options])`
+
+Refunds a transaction by transaction reference.
+
+- `payload (Object, Required)`
+  - `transactionRef (string, Required)` — The reference ID of the transaction to be refunded.
+  - `amount (number, Required)` — Amount to refund.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const refund = await paymish.transaction.refundTransaction(
+  {
+    transactionRef: "TXN_waTjNBitbamwNnLuavU1xd",
+    amount: 100,
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getRefundList(params, [options])`
+
+Retrieves a paginated list of refunds with query filters.
+
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — Business ID.
+  - `limit (integer, Required)` — Limit of records per page.
+  - `page (integer, Required)` — Current page number.
+  - `status (string, Optional)` — Refund status.
+  - `amount (number, Optional)` — Amount.
+  - `filterAmount (string, Optional)` — Filter amount modifier (`gt`, `lt`, `eq`).
+  - `from (string, Optional)` — From date (ISO 8601).
+  - `refundRefId (string, Optional)` — Refund ID or reference.
+  - `to (string, Optional)` — To date (ISO 8601).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const refunds = await paymish.transaction.getRefundList(
+  {
+    businessId: 100,
+    limit: 10,
+    page: 1,
+    status: "completed",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getRefundDetails(params, [options])`
+
+Retrieves refund details using a business ID and either a transaction reference or a refund ID.
+
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — Business ID.
+  - `reference (string, Optional)` — Transaction reference.
+  - `refundId (string, Optional)` — Refund ID.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const details = await paymish.transaction.getRefundDetails(
+  {
+    businessId: 100,
+    reference: "TXN_waTjNBitbamwNnLuavU1xd",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getRefundByReference(params, [options])`
+
+Retrieves refund details by business ID and refund reference.
+
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — Business ID.
+  - `reference (string, Required)` — Refund reference.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const refund = await paymish.transaction.getRefundByReference(
+  {
+    businessId: 100,
+    reference: "REF_98765",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `verifyAccount(payload, [options])`
+
+Verifies an account (e.g. for card refunds or account resolution).
+
+- `payload (Object, Required)`
+  - `bankCode (string, Required)` — Bank code.
+  - `accountNumber (string, Required)` — Account number.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const verification = await paymish.transaction.verifyAccount(
+  {
+    bankCode: "058",
+    accountNumber: "1234567890",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getDebitAccounts(params, [options])`
+
+Retrieves debit accounts with balances.
+
+- `params (Object, Optional)`
+  - `isLive (string|boolean, Optional)` — Live mode flag (true/false).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const accounts = await paymish.transaction.getDebitAccounts(
+  { isLive: "true" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getScheduledTransactions(params, [options])`
+
+Retrieves scheduled transactions.
+
+- `params (Object, Required)`
+  - `scheduleId (string, Required)` — Schedule ID.
+  - `isLive (string|boolean, Optional)` — Live mode flag (true/false).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const scheduled = await paymish.transaction.getScheduledTransactions(
+  {
+    scheduleId: "sch_123",
+    isLive: "true",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
