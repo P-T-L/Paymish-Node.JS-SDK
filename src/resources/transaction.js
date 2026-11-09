@@ -539,6 +539,34 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Retrieves debit accounts with balances.
+   * GET /api/transaction-service/external/v1/debit-accounts
+   *
+   * @param {Object} [params] - Query parameters
+   * @param {string|boolean} [params.isLive] - is Live mode true/false
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getDebitAccounts(params = {}, options = {}) {
+    const searchParams = new URLSearchParams();
+
+    if (params !== null && typeof params === "object") {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const queryString = searchParams.toString();
+    const endpoint = `/api/transaction-service/external/v1/debit-accounts${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;
