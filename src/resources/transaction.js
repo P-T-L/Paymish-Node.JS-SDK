@@ -368,6 +368,36 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Refunds a transaction by transaction reference.
+   * POST /api/transaction-service/external/v1/refund-transaction
+   *
+   * @param {Object} payload - Refund transaction payload
+   * @param {string} payload.transactionRef - The reference ID of the transaction to be refunded (required)
+   * @param {number} payload.amount - Amount to refund (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async refundTransaction(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.transactionRef ||
+      payload.amount === undefined ||
+      payload.amount === null
+    ) {
+      throw new Error(
+        "Invalid payload: 'transactionRef' and 'amount' are required to refund a transaction."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/refund-transaction",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;

@@ -793,4 +793,86 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("refundTransaction()", () => {
+    test("should successfully initiate a transaction refund (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Transaction refund initiated successfully",
+        data: { refundReference: "RFD_12345" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        transactionRef: "TXN_waTjNBitbamwNnLuavU1xd",
+        amount: 100,
+      };
+
+      const result = await paymish.transaction.refundTransaction(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/refund-transaction",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if transactionRef or amount is missing", async () => {
+      await expect(
+        paymish.transaction.refundTransaction({
+          transactionRef: "TXN_waTjNBitbamwNnLuavU1xd",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'transactionRef' and 'amount' are required to refund a transaction."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Transaction cannot be refunded.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.refundTransaction({
+          transactionRef: "TXN_waTjNBitbamwNnLuavU1xd",
+          amount: 100,
+        });
+        throw new Error("Expected refundTransaction to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Transaction cannot be refunded.");
+      }
+    });
+  });
 });
