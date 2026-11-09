@@ -343,6 +343,31 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Verifies a transaction initiated with USSD.
+   * POST /api/transaction-service/external/v1/transaction-with-ussd-verify
+   *
+   * @param {Object} payload - USSD transaction verification payload
+   * @param {string} payload.ussdTransactionId - The USSD transaction ID to verify (required)
+   * @param {boolean} [payload.isLive] - Flag indicating if the verification is in a live environment
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async verifyUssdTransaction(payload, options = {}) {
+    if (!payload || !payload.ussdTransactionId) {
+      throw new Error(
+        "Invalid payload: 'ussdTransactionId' is required to verify a USSD transaction."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transaction-with-ussd-verify",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transaction;
