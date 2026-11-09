@@ -199,6 +199,34 @@ class Transaction {
       options
     );
   }
+
+  /**
+   * Retrieves the list of banks.
+   * GET /api/transaction-service/external/v1/bank-list
+   *
+   * @param {Object} [params] - Query parameters
+   * @param {boolean} [params.isLive] - Flag to indicate if the environment is live
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getBankList(params = {}, options = {}) {
+    const searchParams = new URLSearchParams();
+
+    if (params !== null && typeof params === "object") {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const queryString = searchParams.toString();
+    const endpoint = `/api/transaction-service/external/v1/bank-list${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transaction;

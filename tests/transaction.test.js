@@ -369,4 +369,91 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("getBankList()", () => {
+    test("should successfully retrieve bank list without query params (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Banks retrieved successfully",
+        data: [{ id: 1, name: "Access Bank" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.transaction.getBankList();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/bank-list",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully retrieve bank list with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Banks retrieved successfully",
+        data: [],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.transaction.getBankList({ isLive: true });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/bank-list?isLive=true",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Failed to retrieve bank list.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transaction.getBankList({ isLive: "invalid" });
+        throw new Error("Expected getBankList to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Failed to retrieve bank list.");
+      }
+    });
+  });
 });
