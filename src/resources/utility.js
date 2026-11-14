@@ -124,6 +124,35 @@ class Utility {
       options
     );
   }
+
+  /**
+   * Performs a payment lookup for utilities.
+   * GET /api/payment-service/external/v1/utility/transactions/payment-lookup
+   *
+   * @param {Object} params - Query parameters
+   * @param {string} params.paymentReference - Payment reference (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async paymentLookup(params = {}, options = {}) {
+    if (!params || !params.paymentReference) {
+      throw new Error(
+        "Invalid parameters: 'paymentReference' is required to perform payment lookup."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/payment-service/external/v1/utility/transactions/payment-lookup?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Utility;

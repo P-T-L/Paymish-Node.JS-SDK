@@ -358,4 +358,70 @@ describe("Utility Resource", () => {
       }
     });
   });
+
+  describe("paymentLookup()", () => {
+    test("should successfully perform payment lookup (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Payment lookup successful",
+        data: { paymentReference: "5352405452351", status: "successful", amount: 6800.5 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = { paymentReference: "5352405452351" };
+      const result = await paymish.utility.paymentLookup(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/utility/transactions/payment-lookup?paymentReference=5352405452351",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if paymentReference is missing", async () => {
+      await expect(paymish.utility.paymentLookup({})).rejects.toThrow(
+        "Invalid parameters: 'paymentReference' is required to perform payment lookup."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Payment transaction not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.utility.paymentLookup({ paymentReference: "INVALID_REF" });
+        throw new Error("Expected paymentLookup to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Payment transaction not found.");
+      }
+    });
+  });
 });
