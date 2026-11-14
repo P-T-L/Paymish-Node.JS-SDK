@@ -19,6 +19,7 @@ const Subscription = require("./src/resources/subscription");
 const Transaction = require("./src/resources/transaction");
 const TransactionCustomer = require("./src/resources/transaction-customer");
 const TransactionDisputes = require("./src/resources/transaction-disputes");
+const Transactions = require("./src/resources/transactions");
 
 class Paymish {
   constructor(options = {}) {
@@ -43,6 +44,7 @@ class Paymish {
     this.subaccounts = new Subaccounts(this.client);
     this.subscription = new Subscription(this.client);
     this.transaction = new Transaction(this.client);
+    this.transactions = new Transactions(this.client);
   }
 }
 
