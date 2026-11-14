@@ -75,4 +75,61 @@ describe("Transaction Resource", () => {
       }
     });
   });
+
+  describe("getTransactionStatistics()", () => {
+    test("should successfully retrieve transaction statistics (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Transaction statistics retrieved successfully",
+        data: { totalTransactions: 150, totalVolume: 1500000 },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.transactions.getTransactionStatistics();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/listStatistics",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Failed to retrieve transaction statistics.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transactions.getTransactionStatistics();
+        throw new Error("Expected getTransactionStatistics to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Failed to retrieve transaction statistics.");
+      }
+    });
+  });
 });
