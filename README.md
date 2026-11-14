@@ -2296,6 +2296,142 @@ const transaction = await paymish.transactions.fetchTransaction(
   42,
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
+Transfer Resource (paymish.transfer)
+getAllBanks(params, [options])
+Retrieves the list of banks for transfers.
+
+params (Object, Optional) — Optional query parameters.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const banks = await paymish.transfer.getAllBanks(
+  {},
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+createSingleTransfer(payload, [options])
+Initiates a single transfer to a user.
+
+payload (Object, Required)
+
+amount (number, Required) — Amount to be transferred, in the smallest currency unit (e.g., cents).
+
+bankCode (string, Required) — Code of the bank where the recipient's account is held.
+
+bankName (string, Optional) — Name of the bank where the recipient's account is held.
+
+accountNumber (string, Required) — Recipient's bank account number.
+
+accountName (string, Required) — Name associated with the recipient's bank account.
+
+emailAddress (string, Required) — Email address for sending transfer notifications.
+
+transferNote (string, Optional) — Optional note or memo for the transfer.
+
+transferReference (string, Required) — Unique reference for the transfer transaction.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const transfer = await paymish.transfer.createSingleTransfer(
+  {
+    amount: 1000,
+    bankCode: "999998",
+    bankName: "Zenith Bank",
+    accountNumber: "0051762787",
+    accountName: "Test Account",
+    emailAddress: "email@example.com",
+    transferNote: "Payment for invoice #1234",
+    transferReference: "INV1234TRANS5678",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+getTransferList(params, [options])
+Retrieves a paginated list of transfers with required and optional query filters.
+
+params (Object, Required)
+
+businessId (integer, Required) — The unique identifier of the business.
+
+limit (integer, Required) — The maximum number of records to return.
+
+page (integer, Required) — The current page number for pagination.
+
+transferReference (string, Optional) — The reference number of the transfer.
+
+status (string, Optional) — The status of the transfer (e.g., Successful, Failed, Pending).
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const transfers = await paymish.transfer.getTransferList(
+  {
+    businessId: 18,
+    limit: 10,
+    page: 1,
+    status: "Successful",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+getBalance(params, [options])
+Retrieves the transfer balance for a business.
+
+params (Object, Required)
+
+businessId (integer, Required) — The unique identifier of the business.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const balance = await paymish.transfer.getBalance(
+  { businessId: 18 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+getTransferDetails(params, [options])
+Retrieves transfer details.
+
+params (Object, Required)
+
+transferCode (string, Required) — The unique code of the transfer.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const details = await paymish.transfer.getTransferDetails(
+  { transferCode: "TRF_12345" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+submitBulkTransfer(payload, [options])
+Submits a bulk transfer.
+
+payload (Object, Required)
+
+debitBankCode (string, Required) — The bank code from which funds are debited.
+
+debitAccountNumber (string, Required) — The account number from which funds are debited.
+
+data (Array[Object], Required) — Array of transfer items.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const bulkTransfer = await paymish.transfer.submitBulkTransfer(
+  {
+    debitBankCode: "998",
+    debitAccountNumber: "0112345678",
+    data: [
+      {
+        accountNumber: "0051762787",
+        bankCode: "999998",
+        amount: 1000,
+        accountName: "User One",
+        emailAddress: "one@example.com",
+        transferReference: "TRF_01",
+      },
+    ],
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
 ---
 
 ## Error Handling
