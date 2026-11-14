@@ -124,11 +124,100 @@ describe("Transaction Resource", () => {
 
       try {
         await paymish.transactions.getTransactionStatistics();
-        throw new Error("Expected getTransactionStatistics to throw PaymishError, but it succeeded.");
+        throw new Error(
+          "Expected getTransactionStatistics to throw PaymishError, but it succeeded."
+        );
       } catch (error) {
         expect(error).toBeInstanceOf(PaymishError);
         expect(error.statusCode).toBe(400);
         expect(error.message).toBe("Failed to retrieve transaction statistics.");
+      }
+    });
+  });
+
+  describe("exportTransactionsCsv()", () => {
+    test("should successfully export transactions CSV without query params (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "CSV export generated successfully",
+        data: { downloadUrl: "https://api.paymish.com/downloads/transactions.csv" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.transactions.exportTransactionsCsv();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/csv-list",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully export transactions CSV with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "CSV export generated successfully",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = { businessId: 18, status: "success" };
+      const result = await paymish.transactions.exportTransactionsCsv(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/csv-list?businessId=18&status=success",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Failed to export CSV.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transactions.exportTransactionsCsv();
+        throw new Error("Expected exportTransactionsCsv to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Failed to export CSV.");
       }
     });
   });
