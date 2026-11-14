@@ -2462,57 +2462,60 @@ const recipients = await paymish.transfers.listRecipients(
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
 ```
-Utility Resource (paymish.utility)
-fetchBillerGroups([params], [options])
+
+### Utility Resource (`paymish.utility`)
+
+#### `fetchBillerGroups([params], [options])`
+
 Fetches biller groups.
 
-params (Object, Optional) — Optional query parameters.
+- `params (Object, Optional)` — Optional query parameters.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const billerGroups = await paymish.utility.fetchBillerGroups(
   {},
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-fetchBillersByGroupId(groupId, [options])
+```
+
+#### `fetchBillersByGroupId(groupId, [options])`
+
 Fetches billers by biller group ID.
 
-groupId (number|string, Required) — The ID of the biller group.
+- `groupId (number|string, Required)` — The ID of the biller group.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
+```javascript
+const billers = await paymish.utility.fetchBillersByGroupId(5, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
 
-JavaScript
-const billers = await paymish.utility.fetchBillersByGroupId(
-  5,
-  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
-);
-fetchPackagesByBillerId(billerId, [options])
+#### `fetchPackagesByBillerId(billerId, [options])`
+
 Fetches packages by biller ID.
 
-billerId (number|string, Required) — The ID of the biller.
+- `billerId (number|string, Required)` — The ID of the biller.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
+```javascript
+const packages = await paymish.utility.fetchPackagesByBillerId(101, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
 
-JavaScript
-const packages = await paymish.utility.fetchPackagesByBillerId(
-  101,
-  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
-);
-customerLookup(payload, [options])
+#### `customerLookup(payload, [options])`
+
 Performs a customer lookup for utilities.
 
-payload (Object, Required)
+- `payload (Object, Required)`
+  - `customerId (string, Optional)` — Customer ID.
+  - `billerId (number, Optional)` — Biller ID.
+  - `productName (string, Optional)` — Product name.
+- `options (Object, Optional)` — Custom per-request options.
 
-customerId (string, Optional) — Customer ID.
-
-billerId (number, Optional) — Biller ID.
-
-productName (string, Optional) — Product name.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const customer = await paymish.utility.customerLookup(
   {
     customerId: "0101160313181",
@@ -2521,32 +2524,25 @@ const customer = await paymish.utility.customerLookup(
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-processPayment(payload, [options])
+```
+
+#### `processPayment(payload, [options])`
+
 Processes a utility payment.
 
-payload (Object, Required)
+- `payload (Object, Required)`
+  - `paymentReference (string, Optional)` — Payment reference.
+  - `customerId (string, Optional)` — Customer ID.
+  - `packageSlug (string, Optional)` — Package slug.
+  - `channel (string, Optional)` — Payment channel (e.g., `WEB`).
+  - `amount (number, Optional)` — Payment amount.
+  - `customerName (string, Optional)` — Customer name.
+  - `phoneNumber (string, Optional)` — Customer phone number.
+  - `email (string, Optional)` — Customer email address.
+  - `accountNumber (string, Optional)` — Account number.
+- `options (Object, Optional)` — Custom per-request options.
 
-paymentReference (string, Optional) — Payment reference.
-
-customerId (string, Optional) — Customer ID.
-
-packageSlug (string, Optional) — Package slug.
-
-channel (string, Optional) — Payment channel (e.g., WEB).
-
-amount (number, Optional) — Payment amount.
-
-customerName (string, Optional) — Customer name.
-
-phoneNumber (string, Optional) — Customer phone number.
-
-email (string, Optional) — Customer email address.
-
-accountNumber (string, Optional) — Account number.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const payment = await paymish.utility.processPayment(
   {
     paymentReference: "5352405452351",
@@ -2561,20 +2557,86 @@ const payment = await paymish.utility.processPayment(
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-paymentLookup(params, [options])
+```
+
+#### `paymentLookup(params, [options])`
+
 Performs a payment lookup for utilities.
 
-params (Object, Required)
+- `params (Object, Required)`
+  - `paymentReference (string, Required)` — Payment reference.
+- `options (Object, Optional)` — Custom per-request options.
 
-paymentReference (string, Required) — Payment reference.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const lookup = await paymish.utility.paymentLookup(
   { paymentReference: "5352405452351" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
+```
+
+### Virtual Accounts Resource (`paymish.virtualAccounts`)
+
+#### `listVirtualAccounts([params], [options])`
+
+Retrieves a list of virtual accounts.
+
+- `params (Object, Optional)` — Optional query parameters (e.g., `page`, `limit`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const virtualAccounts = await paymish.virtualAccounts.listVirtualAccounts(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `createVirtualAccount(payload, [options])`
+
+Creates a virtual account.
+
+- `payload (Object, Required)` — Virtual account creation payload (e.g., `accountName`, `bvn`, `email`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const newAccount = await paymish.virtualAccounts.createVirtualAccount(
+  {
+    accountName: "John Doe",
+    bvn: "22222222222",
+    email: "john@example.com",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `getVirtualAccount(id, [options])`
+
+Retrieves virtual account details by ID.
+
+- `id (string|number, Required)` — The unique identifier of the virtual account.
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const account = await paymish.virtualAccounts.getVirtualAccount("va_123", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
+
+#### `updateVirtualAccount(id, payload, [options])`
+
+Updates a virtual account by ID.
+
+- `id (string|number, Required)` — The unique identifier of the virtual account.
+- `payload (Object, Required)` — Update payload (e.g., `accountName`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const updatedAccount = await paymish.virtualAccounts.updateVirtualAccount(
+  "va_123",
+  { accountName: "Updated Name" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
