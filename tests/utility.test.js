@@ -276,4 +276,86 @@ describe("Utility Resource", () => {
       }
     });
   });
+
+  describe("processPayment()", () => {
+    test("should successfully process a utility payment (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Payment processed successfully",
+        data: { paymentReference: "5352405452351", status: "successful" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        paymentReference: "5352405452351",
+        customerId: "0101160313181",
+        packageSlug: "MTN_NIGERIA",
+        channel: "WEB",
+        amount: 6800.5,
+        customerName: "Tester Example",
+        phoneNumber: "23480812345",
+        email: "tester.example@sample.com",
+        accountNumber: "0012345678",
+      };
+
+      const result = await paymish.utility.processPayment(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/utility/transactions/process-payment",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if payload is missing or invalid", async () => {
+      await expect(paymish.utility.processPayment(null)).rejects.toThrow(
+        "Invalid payload: payload object is required to process payment."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Payment processing failed.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.utility.processPayment({ amount: -100 });
+        throw new Error("Expected processPayment to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Payment processing failed.");
+      }
+    });
+  });
 });

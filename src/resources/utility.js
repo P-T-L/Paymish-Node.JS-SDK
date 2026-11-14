@@ -94,6 +94,36 @@ class Utility {
       options
     );
   }
+
+  /**
+   * Processes a utility payment.
+   * POST /api/payment-service/external/v1/utility/transactions/process-payment
+   *
+   * @param {Object} payload - Process payment payload
+   * @param {string} [payload.paymentReference] - Payment reference
+   * @param {string} [payload.customerId] - Customer ID
+   * @param {string} [payload.packageSlug] - Package slug
+   * @param {string} [payload.channel] - Payment channel (e.g. WEB)
+   * @param {number} [payload.amount] - Payment amount
+   * @param {string} [payload.customerName] - Customer name
+   * @param {string} [payload.phoneNumber] - Customer phone number
+   * @param {string} [payload.email] - Customer email address
+   * @param {string} [payload.accountNumber] - Account number
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async processPayment(payload = {}, options = {}) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid payload: payload object is required to process payment.");
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/utility/transactions/process-payment",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Utility;
