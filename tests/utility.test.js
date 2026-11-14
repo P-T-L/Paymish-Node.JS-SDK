@@ -132,4 +132,72 @@ describe("Utility Resource", () => {
       }
     });
   });
+
+  describe("fetchPackagesByBillerId()", () => {
+    test("should successfully fetch packages by biller ID (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Packages retrieved successfully",
+        data: [{ id: 201, name: "Prepaid 1000" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const billerId = 101;
+      const result = await paymish.utility.fetchPackagesByBillerId(billerId);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/utility/packages/biller/101",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if billerId is missing or empty", async () => {
+      await expect(paymish.utility.fetchPackagesByBillerId()).rejects.toThrow(
+        "Invalid parameter: 'billerId' is required to fetch packages by biller ID."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (404 Not Found)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Biller not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.utility.fetchPackagesByBillerId(9999);
+        throw new Error(
+          "Expected fetchPackagesByBillerId to throw PaymishError, but it succeeded."
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(404);
+        expect(error.message).toBe("Biller not found.");
+      }
+    });
+  });
 });

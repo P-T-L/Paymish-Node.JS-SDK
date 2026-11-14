@@ -51,6 +51,25 @@ class Utility {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Fetches packages by biller ID.
+   * GET /api/payment-service/external/v1/utility/packages/biller/{billerId}
+   *
+   * @param {number|string} billerId - The ID of the biller (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async fetchPackagesByBillerId(billerId, options = {}) {
+    if (billerId === undefined || billerId === null || billerId === "") {
+      throw new Error("Invalid parameter: 'billerId' is required to fetch packages by biller ID.");
+    }
+
+    const encodedBillerId = encodeURIComponent(String(billerId).trim());
+    const endpoint = `/api/payment-service/external/v1/utility/packages/biller/${encodedBillerId}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Utility;
