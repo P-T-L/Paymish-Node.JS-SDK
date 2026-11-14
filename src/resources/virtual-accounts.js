@@ -53,6 +53,25 @@ class VirtualAccounts {
       options
     );
   }
+
+  /**
+   * Retrieves virtual account details by ID.
+   * GET /api/transaction-service/external/v1/virtual-accounts/{id}
+   *
+   * @param {string|number} id - The unique identifier of the virtual account (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getVirtualAccount(id, options = {}) {
+    if (id === undefined || id === null || id === "") {
+      throw new Error("Invalid parameter: 'id' is required to retrieve a virtual account.");
+    }
+
+    const encodedId = encodeURIComponent(String(id).trim());
+    const endpoint = `/api/transaction-service/external/v1/virtual-accounts/${encodedId}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = VirtualAccounts;
