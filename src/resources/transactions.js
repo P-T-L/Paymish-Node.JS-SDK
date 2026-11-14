@@ -82,6 +82,33 @@ class Transactions {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Lists PayPlus banks.
+   * GET /api/transaction-service/external/v1/bank-list-payplus
+   *
+   * @param {Object} [params] - Optional query parameters
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async listPayPlusBanks(params = {}, options = {}) {
+    const searchParams = new URLSearchParams();
+
+    if (params !== null && typeof params === "object") {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const queryString = searchParams.toString();
+    const endpoint = `/api/transaction-service/external/v1/bank-list-payplus${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transactions;
