@@ -32,6 +32,27 @@ class VirtualAccounts {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Creates a virtual account.
+   * POST /api/transaction-service/external/v1/virtual-accounts
+   *
+   * @param {Object} payload - Virtual account creation payload
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async createVirtualAccount(payload = {}, options = {}) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid payload: payload object is required to create a virtual account.");
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/virtual-accounts",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = VirtualAccounts;

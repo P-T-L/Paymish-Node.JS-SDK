@@ -96,4 +96,80 @@ describe("Virtual Accounts Resource", () => {
       }
     });
   });
+
+  describe("createVirtualAccount()", () => {
+    test("should successfully create a virtual account (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Virtual account created successfully",
+        data: { accountNumber: "0123456789", accountName: "John Doe", bankName: "Test Bank" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        accountName: "John Doe",
+        bvn: "22222222222",
+        email: "john@example.com",
+      };
+
+      const result = await paymish.virtualAccounts.createVirtualAccount(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/virtual-accounts",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if payload is missing or invalid", async () => {
+      await expect(paymish.virtualAccounts.createVirtualAccount(null)).rejects.toThrow(
+        "Invalid payload: payload object is required to create a virtual account."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid BVN or account details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.virtualAccounts.createVirtualAccount({ accountName: "" });
+        throw new Error("Expected createVirtualAccount to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid BVN or account details.");
+      }
+    });
+  });
 });
