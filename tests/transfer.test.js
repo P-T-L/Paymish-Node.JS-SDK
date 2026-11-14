@@ -371,4 +371,105 @@ describe("Transfer Resource", () => {
       }
     });
   });
+
+  describe("submitBulkTransfer()", () => {
+    test("should successfully submit a bulk transfer (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Bulk transfer submitted successfully",
+        data: { batchId: "BATCH_12345", totalTransfers: 2, status: "processing" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        debitBankCode: "998",
+        debitAccountNumber: "0112345678",
+        data: [
+          {
+            accountNumber: "0051762787",
+            bankCode: "999998",
+            amount: 1000,
+            accountName: "User One",
+            emailAddress: "one@example.com",
+            transferReference: "TRF_01",
+          },
+          {
+            accountNumber: "0051762788",
+            bankCode: "999998",
+            amount: 2000,
+            accountName: "User Two",
+            emailAddress: "two@example.com",
+            transferReference: "TRF_02",
+          },
+        ],
+      };
+
+      const result = await paymish.transfer.submitBulkTransfer(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/submit-bulk-transfer",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if debitBankCode, debitAccountNumber, or data array is missing", async () => {
+      await expect(
+        paymish.transfer.submitBulkTransfer({
+          debitBankCode: "998",
+        })
+      ).rejects.toThrow(
+        "Invalid payload: 'debitBankCode', 'debitAccountNumber', and 'data' (array) are required to submit a bulk transfer."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid debit account details.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transfer.submitBulkTransfer({
+          debitBankCode: "998",
+          debitAccountNumber: "0000000000",
+          data: [],
+        });
+        throw new Error("Expected submitBulkTransfer to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid debit account details.");
+      }
+    });
+  });
 });

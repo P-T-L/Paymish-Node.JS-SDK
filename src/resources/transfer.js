@@ -169,6 +169,37 @@ class Transfer {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Submits a bulk transfer.
+   * POST /api/transaction-service/external/v1/transfer/submit-bulk-transfer
+   *
+   * @param {Object} payload - Bulk transfer payload
+   * @param {string} payload.debitBankCode - The bank code from which funds are debited (required)
+   * @param {string} payload.debitAccountNumber - The account number from which funds are debited (required)
+   * @param {Array<Object>} payload.data - Array of transfer items (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async submitBulkTransfer(payload, options = {}) {
+    if (
+      !payload ||
+      !payload.debitBankCode ||
+      !payload.debitAccountNumber ||
+      !Array.isArray(payload.data)
+    ) {
+      throw new Error(
+        "Invalid payload: 'debitBankCode', 'debitAccountNumber', and 'data' (array) are required to submit a bulk transfer."
+      );
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/transaction-service/external/v1/transfer/submit-bulk-transfer",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Transfer;
