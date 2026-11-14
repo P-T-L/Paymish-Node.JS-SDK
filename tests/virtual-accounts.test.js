@@ -1,0 +1,99 @@
+const Paymish = require("../index");
+const { PaymishError } = require("../src/errors");
+
+describe("Virtual Accounts Resource", () => {
+  let paymish;
+
+  beforeEach(() => {
+    paymish = new Paymish({ baseUrl: "https://api.paymish.com" });
+    jest.clearAllMocks();
+    global.fetch = jest.fn();
+  });
+
+  describe("listVirtualAccounts()", () => {
+    test("should successfully list virtual accounts without query params (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Virtual accounts retrieved successfully",
+        data: [{ accountNumber: "0123456789", accountName: "John Doe" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.virtualAccounts.listVirtualAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/virtual-accounts",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should successfully list virtual accounts with query parameters (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Virtual accounts retrieved successfully",
+        data: [],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const result = await paymish.virtualAccounts.listVirtualAccounts({ page: 1, limit: 10 });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/virtual-accounts?page=1&limit=10",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Failed to retrieve virtual accounts.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.virtualAccounts.listVirtualAccounts();
+        throw new Error("Expected listVirtualAccounts to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Failed to retrieve virtual accounts.");
+      }
+    });
+  });
+});

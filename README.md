@@ -2462,7 +2462,119 @@ const recipients = await paymish.transfers.listRecipients(
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
 ```
+Utility Resource (paymish.utility)
+fetchBillerGroups([params], [options])
+Fetches biller groups.
 
+params (Object, Optional) — Optional query parameters.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const billerGroups = await paymish.utility.fetchBillerGroups(
+  {},
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+fetchBillersByGroupId(groupId, [options])
+Fetches billers by biller group ID.
+
+groupId (number|string, Required) — The ID of the biller group.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const billers = await paymish.utility.fetchBillersByGroupId(
+  5,
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+fetchPackagesByBillerId(billerId, [options])
+Fetches packages by biller ID.
+
+billerId (number|string, Required) — The ID of the biller.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const packages = await paymish.utility.fetchPackagesByBillerId(
+  101,
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+customerLookup(payload, [options])
+Performs a customer lookup for utilities.
+
+payload (Object, Required)
+
+customerId (string, Optional) — Customer ID.
+
+billerId (number, Optional) — Biller ID.
+
+productName (string, Optional) — Product name.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const customer = await paymish.utility.customerLookup(
+  {
+    customerId: "0101160313181",
+    billerId: 1,
+    productName: "PREPAID",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+processPayment(payload, [options])
+Processes a utility payment.
+
+payload (Object, Required)
+
+paymentReference (string, Optional) — Payment reference.
+
+customerId (string, Optional) — Customer ID.
+
+packageSlug (string, Optional) — Package slug.
+
+channel (string, Optional) — Payment channel (e.g., WEB).
+
+amount (number, Optional) — Payment amount.
+
+customerName (string, Optional) — Customer name.
+
+phoneNumber (string, Optional) — Customer phone number.
+
+email (string, Optional) — Customer email address.
+
+accountNumber (string, Optional) — Account number.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const payment = await paymish.utility.processPayment(
+  {
+    paymentReference: "5352405452351",
+    customerId: "0101160313181",
+    packageSlug: "MTN_NIGERIA",
+    channel: "WEB",
+    amount: 6800.5,
+    customerName: "Tester Example",
+    phoneNumber: "23480812345",
+    email: "tester.example@sample.com",
+    accountNumber: "0012345678",
+  },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+paymentLookup(params, [options])
+Performs a payment lookup for utilities.
+
+params (Object, Required)
+
+paymentReference (string, Required) — Payment reference.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const lookup = await paymish.utility.paymentLookup(
+  { paymentReference: "5352405452351" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
 ---
 
 ## Error Handling

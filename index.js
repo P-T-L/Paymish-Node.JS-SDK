@@ -23,6 +23,7 @@ const Transactions = require("./src/resources/transactions");
 const Transfer = require("./src/resources/transfer");
 const Transfers = require("./src/resources/transfers");
 const Utility = require("./src/resources/utility");
+const VirtualAccounts = require("./src/resources/virtual-accounts");
 
 class Paymish {
   constructor(options = {}) {
@@ -51,6 +52,7 @@ class Paymish {
     this.transfer = new Transfer(this.client);
     this.transfers = new Transfers(this.client);
     this.utility = new Utility(this.client);
+    this.virtualAccounts = new VirtualAccounts(this.client);
   }
 }
 
