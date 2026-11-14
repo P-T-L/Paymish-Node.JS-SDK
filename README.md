@@ -2227,7 +2227,75 @@ const scheduled = await paymish.transaction.getScheduledTransactions(
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
 ```
+Transactions Resource (paymish.transactions)
+verifyTransaction(reference, [options])
+Verifies a transaction by its reference.
 
+reference (string, Required) — The transaction reference used to initiate the transaction.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const verification = await paymish.transactions.verifyTransaction(
+  "TXN_waTjNBitbamwNnLuavU1xd",
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+getTransactionStatistics([params], [options])
+Retrieves transaction statistics.
+
+params (Object, Optional) — Optional query parameters.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const statistics = await paymish.transactions.getTransactionStatistics(
+  {},
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+exportTransactionsCsv([params], [options])
+Exports transactions as a CSV list.
+
+params (Object, Optional)
+
+businessId (integer, Optional) — Business ID.
+
+status (string, Optional) — Filter transactions by status.
+
+from (string, Optional) — From date.
+
+to (string, Optional) — To date.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const exportResult = await paymish.transactions.exportTransactionsCsv(
+  { businessId: 18, status: "success" },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+listPayPlusBanks([params], [options])
+Lists PayPlus banks.
+
+params (Object, Optional) — Optional query parameters.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const banks = await paymish.transactions.listPayPlusBanks(
+  {},
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+fetchTransaction(id, [options])
+Fetches a transaction by its ID.
+
+id (integer|string, Required) — An ID for the transaction to fetch.
+
+options (Object, Optional) — Custom per-request options.
+
+JavaScript
+const transaction = await paymish.transactions.fetchTransaction(
+  42,
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
 ---
 
 ## Error Handling

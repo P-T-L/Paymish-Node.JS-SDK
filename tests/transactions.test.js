@@ -1,7 +1,7 @@
 const Paymish = require("../index");
 const { PaymishError } = require("../src/errors");
 
-describe("Transaction Resource", () => {
+describe("Transactions Resource", () => {
   let paymish;
 
   beforeEach(() => {
