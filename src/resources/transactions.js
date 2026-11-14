@@ -109,6 +109,25 @@ class Transactions {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Fetches a transaction by its ID.
+   * GET /api/transaction-service/external/v1/fetch/{id}
+   *
+   * @param {number|string} id - ID for the transaction to fetch (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async fetchTransaction(id, options = {}) {
+    if (id === undefined || id === null || id === "") {
+      throw new Error("Invalid parameter: 'id' is required to fetch a transaction.");
+    }
+
+    const encodedId = encodeURIComponent(String(id).trim());
+    const endpoint = `/api/transaction-service/external/v1/fetch/${encodedId}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transactions;
