@@ -200,4 +200,80 @@ describe("Utility Resource", () => {
       }
     });
   });
+
+  describe("customerLookup()", () => {
+    test("should successfully perform customer lookup (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Customer lookup successful",
+        data: { customerName: "Jane Doe", customerId: "0101160313181" },
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const payload = {
+        customerId: "0101160313181",
+        billerId: 1,
+        productName: "PREPAID",
+      };
+
+      const result = await paymish.utility.customerLookup(payload);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/payment-service/external/v1/utility/transactions/customer-lookup",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "Idempotency-Key": expect.stringMatching(/^sdk_auto_/),
+          }),
+          body: JSON.stringify(payload),
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if payload is missing or invalid", async () => {
+      await expect(paymish.utility.customerLookup(null)).rejects.toThrow(
+        "Invalid payload: payload object is required for customer lookup."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Customer not found.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.utility.customerLookup({ customerId: "INVALID" });
+        throw new Error("Expected customerLookup to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Customer not found.");
+      }
+    });
+  });
 });

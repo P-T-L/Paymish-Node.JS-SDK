@@ -70,6 +70,30 @@ class Utility {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Performs a customer lookup for utilities.
+   * POST /api/payment-service/external/v1/utility/transactions/customer-lookup
+   *
+   * @param {Object} payload - Customer lookup payload
+   * @param {string} [payload.customerId] - Customer ID
+   * @param {number} [payload.billerId] - Biller ID
+   * @param {string} [payload.productName] - Product name
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout, idempotencyKey)
+   * @returns {Promise<Object>} API response payload
+   */
+  async customerLookup(payload = {}, options = {}) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Invalid payload: payload object is required for customer lookup.");
+    }
+
+    return this.client.request(
+      "POST",
+      "/api/payment-service/external/v1/utility/transactions/customer-lookup",
+      payload,
+      options
+    );
+  }
 }
 
 module.exports = Utility;
