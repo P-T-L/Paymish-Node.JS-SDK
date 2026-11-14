@@ -2227,112 +2227,113 @@ const scheduled = await paymish.transaction.getScheduledTransactions(
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
 ```
-Transactions Resource (paymish.transactions)
-verifyTransaction(reference, [options])
+
+### Transactions Resource (`paymish.transactions`)
+
+#### `verifyTransaction(reference, [options])`
+
 Verifies a transaction by its reference.
 
-reference (string, Required) — The transaction reference used to initiate the transaction.
+- `reference (string, Required)` — The transaction reference used to initiate the transaction.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
+```javascript
+const verification = await paymish.transactions.verifyTransaction("TXN_waTjNBitbamwNnLuavU1xd", {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
 
-JavaScript
-const verification = await paymish.transactions.verifyTransaction(
-  "TXN_waTjNBitbamwNnLuavU1xd",
-  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
-);
-getTransactionStatistics([params], [options])
+#### `getTransactionStatistics([params], [options])`
+
 Retrieves transaction statistics.
 
-params (Object, Optional) — Optional query parameters.
+- `params (Object, Optional)` — Optional query parameters.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const statistics = await paymish.transactions.getTransactionStatistics(
   {},
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-exportTransactionsCsv([params], [options])
+```
+
+#### `exportTransactionsCsv([params], [options])`
+
 Exports transactions as a CSV list.
 
-params (Object, Optional)
+- `params (Object, Optional)`
+  - `businessId (integer, Optional)` — Business ID.
+  - `status (string, Optional)` — Filter transactions by status.
+  - `from (string, Optional)` — From date.
+  - `to (string, Optional)` — To date.
+- `options (Object, Optional)` — Custom per-request options.
 
-businessId (integer, Optional) — Business ID.
-
-status (string, Optional) — Filter transactions by status.
-
-from (string, Optional) — From date.
-
-to (string, Optional) — To date.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const exportResult = await paymish.transactions.exportTransactionsCsv(
   { businessId: 18, status: "success" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-listPayPlusBanks([params], [options])
+```
+
+#### `listPayPlusBanks([params], [options])`
+
 Lists PayPlus banks.
 
-params (Object, Optional) — Optional query parameters.
+- `params (Object, Optional)` — Optional query parameters.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const banks = await paymish.transactions.listPayPlusBanks(
   {},
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-fetchTransaction(id, [options])
+```
+
+#### `fetchTransaction(id, [options])`
+
 Fetches a transaction by its ID.
 
-id (integer|string, Required) — An ID for the transaction to fetch.
+- `id (integer|string, Required)` — An ID for the transaction to fetch.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
+```javascript
+const transaction = await paymish.transactions.fetchTransaction(42, {
+  headers: { Authorization: "Bearer YOUR_SECRET_KEY" },
+});
+```
 
-JavaScript
-const transaction = await paymish.transactions.fetchTransaction(
-  42,
-  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
-);
-Transfer Resource (paymish.transfer)
-getAllBanks(params, [options])
+### Transfer Resource (`paymish.transfer`)
+
+#### `getAllBanks(params, [options])`
+
 Retrieves the list of banks for transfers.
 
-params (Object, Optional) — Optional query parameters.
+- `params (Object, Optional)` — Optional query parameters.
+- `options (Object, Optional)` — Custom per-request options.
 
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const banks = await paymish.transfer.getAllBanks(
   {},
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-createSingleTransfer(payload, [options])
+```
+
+#### `createSingleTransfer(payload, [options])`
+
 Initiates a single transfer to a user.
 
-payload (Object, Required)
+- `payload (Object, Required)`
+  - `amount (number, Required)` — Amount to be transferred, in the smallest currency unit (e.g., cents).
+  - `bankCode (string, Required)` — Code of the bank where the recipient's account is held.
+  - `bankName (string, Optional)` — Name of the bank where the recipient's account is held.
+  - `accountNumber (string, Required)` — Recipient's bank account number.
+  - `accountName (string, Required)` — Name associated with the recipient's bank account.
+  - `emailAddress (string, Required)` — Email address for sending transfer notifications.
+  - `transferNote (string, Optional)` — Optional note or memo for the transfer.
+  - `transferReference (string, Required)` — Unique reference for the transfer transaction.
+- `options (Object, Optional)` — Custom per-request options.
 
-amount (number, Required) — Amount to be transferred, in the smallest currency unit (e.g., cents).
-
-bankCode (string, Required) — Code of the bank where the recipient's account is held.
-
-bankName (string, Optional) — Name of the bank where the recipient's account is held.
-
-accountNumber (string, Required) — Recipient's bank account number.
-
-accountName (string, Required) — Name associated with the recipient's bank account.
-
-emailAddress (string, Required) — Email address for sending transfer notifications.
-
-transferNote (string, Optional) — Optional note or memo for the transfer.
-
-transferReference (string, Required) — Unique reference for the transfer transaction.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const transfer = await paymish.transfer.createSingleTransfer(
   {
     amount: 1000,
@@ -2346,24 +2347,21 @@ const transfer = await paymish.transfer.createSingleTransfer(
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-getTransferList(params, [options])
+```
+
+#### `getTransferList(params, [options])`
+
 Retrieves a paginated list of transfers with required and optional query filters.
 
-params (Object, Required)
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — The unique identifier of the business.
+  - `limit (integer, Required)` — The maximum number of records to return.
+  - `page (integer, Required)` — The current page number for pagination.
+  - `transferReference (string, Optional)` — The reference number of the transfer.
+  - `status (string, Optional)` — The status of the transfer (e.g., `Successful`, `Failed`, `Pending`).
+- `options (Object, Optional)` — Custom per-request options.
 
-businessId (integer, Required) — The unique identifier of the business.
-
-limit (integer, Required) — The maximum number of records to return.
-
-page (integer, Required) — The current page number for pagination.
-
-transferReference (string, Optional) — The reference number of the transfer.
-
-status (string, Optional) — The status of the transfer (e.g., Successful, Failed, Pending).
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const transfers = await paymish.transfer.getTransferList(
   {
     businessId: 18,
@@ -2373,48 +2371,49 @@ const transfers = await paymish.transfer.getTransferList(
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-getBalance(params, [options])
+```
+
+#### `getBalance(params, [options])`
+
 Retrieves the transfer balance for a business.
 
-params (Object, Required)
+- `params (Object, Required)`
+  - `businessId (integer, Required)` — The unique identifier of the business.
+- `options (Object, Optional)` — Custom per-request options.
 
-businessId (integer, Required) — The unique identifier of the business.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const balance = await paymish.transfer.getBalance(
   { businessId: 18 },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-getTransferDetails(params, [options])
+```
+
+#### `getTransferDetails(params, [options])`
+
 Retrieves transfer details.
 
-params (Object, Required)
+- `params (Object, Required)`
+  - `transferCode (string, Required)` — The unique code of the transfer.
+- `options (Object, Optional)` — Custom per-request options.
 
-transferCode (string, Required) — The unique code of the transfer.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const details = await paymish.transfer.getTransferDetails(
   { transferCode: "TRF_12345" },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
-submitBulkTransfer(payload, [options])
+```
+
+#### `submitBulkTransfer(payload, [options])`
+
 Submits a bulk transfer.
 
-payload (Object, Required)
+- `payload (Object, Required)`
+  - `debitBankCode (string, Required)` — The bank code from which funds are debited.
+  - `debitAccountNumber (string, Required)` — The account number from which funds are debited.
+  - `data (Array[Object], Required)` — Array of transfer items.
+- `options (Object, Optional)` — Custom per-request options.
 
-debitBankCode (string, Required) — The bank code from which funds are debited.
-
-debitAccountNumber (string, Required) — The account number from which funds are debited.
-
-data (Array[Object], Required) — Array of transfer items.
-
-options (Object, Optional) — Custom per-request options.
-
-JavaScript
+```javascript
 const bulkTransfer = await paymish.transfer.submitBulkTransfer(
   {
     debitBankCode: "998",
@@ -2432,6 +2431,38 @@ const bulkTransfer = await paymish.transfer.submitBulkTransfer(
   },
   { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
 );
+```
+
+### Transfers Resource (`paymish.transfers`)
+
+#### `listTransfers([params], [options])`
+
+Retrieves a list of transfers.
+
+- `params (Object, Optional)` — Optional query parameters (e.g., `page`, `limit`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const transfers = await paymish.transfers.listTransfers(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
+#### `listRecipients([params], [options])`
+
+Retrieves a list of recipients.
+
+- `params (Object, Optional)` — Optional query parameters (e.g., `page`, `limit`).
+- `options (Object, Optional)` — Custom per-request options.
+
+```javascript
+const recipients = await paymish.transfers.listRecipients(
+  { page: 1, limit: 10 },
+  { headers: { Authorization: "Bearer YOUR_SECRET_KEY" } }
+);
+```
+
 ---
 
 ## Error Handling
