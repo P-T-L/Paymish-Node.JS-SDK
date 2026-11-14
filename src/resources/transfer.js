@@ -113,6 +113,33 @@ class Transfer {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves the transfer balance for a business.
+   * GET /api/transaction-service/external/v1/transfer/balance
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.businessId - The unique identifier of the business (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getBalance(params = {}, options = {}) {
+    if (!params || params.businessId === undefined || params.businessId === null) {
+      throw new Error("Invalid parameters: 'businessId' is required to retrieve the balance.");
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/transfer/balance?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transfer;
