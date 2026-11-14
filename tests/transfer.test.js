@@ -159,4 +159,84 @@ describe("Transfer Resource", () => {
       }
     });
   });
+
+  describe("getTransferList()", () => {
+    test("should successfully retrieve transfer list with required and optional query params (200 OK)", async () => {
+      const mockResponseBody = {
+        status: "success",
+        message: "Transfer list retrieved successfully",
+        data: [{ transferReference: "INV1234TRANS5678", amount: 1000, status: "Successful" }],
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockResponseBody),
+      });
+
+      const params = {
+        businessId: 18,
+        limit: 10,
+        page: 1,
+        status: "Successful",
+      };
+
+      const result = await paymish.transfer.getTransferList(params);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.paymish.com/api/transaction-service/external/v1/transfer/get-transfer-list?businessId=18&limit=10&page=1&status=Successful",
+        expect.objectContaining({
+          method: "GET",
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      expect(result).toEqual(mockResponseBody);
+    });
+
+    test("should throw early validation error if required query params are missing", async () => {
+      await expect(
+        paymish.transfer.getTransferList({
+          businessId: 18,
+        })
+      ).rejects.toThrow(
+        "Invalid parameters: 'businessId', 'limit', and 'page' are required to retrieve the transfer list."
+      );
+
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("should throw PaymishError when request fails (400 Bad Request)", async () => {
+      const mockErrorBody = {
+        status: "error",
+        message: "Invalid query parameters.",
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        headers: {
+          get: (header) => (header === "content-type" ? "application/json" : null),
+        },
+        json: jest.fn().mockResolvedValueOnce(mockErrorBody),
+      });
+
+      try {
+        await paymish.transfer.getTransferList({
+          businessId: 18,
+          limit: 10,
+          page: 1,
+        });
+        throw new Error("Expected getTransferList to throw PaymishError, but it succeeded.");
+      } catch (error) {
+        expect(error).toBeInstanceOf(PaymishError);
+        expect(error.statusCode).toBe(400);
+        expect(error.message).toBe("Invalid query parameters.");
+      }
+    });
+  });
 });

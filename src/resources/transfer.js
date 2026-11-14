@@ -72,6 +72,47 @@ class Transfer {
       options
     );
   }
+
+  /**
+   * Retrieves a paginated list of transfers with required and optional query filters.
+   * GET /api/transaction-service/external/v1/transfer/get-transfer-list
+   *
+   * @param {Object} params - Query parameters
+   * @param {number} params.businessId - The unique identifier of the business (required)
+   * @param {number} params.limit - The maximum number of records to return (required)
+   * @param {number} params.page - The current page number for pagination (required)
+   * @param {string} [params.transferReference] - The reference number of the transfer
+   * @param {string} [params.status] - The status of the transfer (e.g. Successful, Failed, Pending)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getTransferList(params = {}, options = {}) {
+    if (
+      !params ||
+      params.businessId === undefined ||
+      params.businessId === null ||
+      params.limit === undefined ||
+      params.limit === null ||
+      params.page === undefined ||
+      params.page === null
+    ) {
+      throw new Error(
+        "Invalid parameters: 'businessId', 'limit', and 'page' are required to retrieve the transfer list."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/transfer/get-transfer-list?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transfer;
