@@ -140,6 +140,35 @@ class Transfer {
 
     return this.client.request("GET", endpoint, null, options);
   }
+
+  /**
+   * Retrieves transfer details.
+   * GET /api/transaction-service/external/v1/transfer/transfer-details
+   *
+   * @param {Object} params - Query parameters
+   * @param {string} params.transferCode - The unique code of the transfer (required)
+   * @param {Object} [options] - Optional request overrides (e.g. headers, timeout)
+   * @returns {Promise<Object>} API response payload
+   */
+  async getTransferDetails(params = {}, options = {}) {
+    if (!params || !params.transferCode) {
+      throw new Error(
+        "Invalid parameters: 'transferCode' is required to retrieve transfer details."
+      );
+    }
+
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const endpoint = `/api/transaction-service/external/v1/transfer/transfer-details?${searchParams.toString()}`;
+
+    return this.client.request("GET", endpoint, null, options);
+  }
 }
 
 module.exports = Transfer;
